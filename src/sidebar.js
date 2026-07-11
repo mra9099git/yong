@@ -46,6 +46,8 @@ export function initSidebar(handlers) {
     calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1);
     renderCalendar();
   });
+
+  renderCalendar();
 }
 
 function populateBookFilter() {
@@ -60,7 +62,12 @@ function populateBookFilter() {
 }
 
 export async function refreshSidebar(currentDate) {
-  allRecords = await listAllRecords();
+  try {
+    allRecords = await listAllRecords();
+  } catch (err) {
+    console.error('기록 목록 로드 실패:', err);
+    allRecords = [];
+  }
   if (currentDate) {
     const d = parseDate(currentDate);
     calendarMonth = new Date(d.getFullYear(), d.getMonth(), 1);

@@ -36,15 +36,37 @@ let currentInputChapter = null;
 
 const els = {};
 
+function showInitError(message) {
+  let bar = document.getElementById('init-error');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'init-error';
+    bar.className = 'init-error';
+    document.body.prepend(bar);
+  }
+  bar.textContent = message;
+}
+
 async function init() {
-  await loadBibleData();
+  try {
+    await loadBibleData();
+  } catch (err) {
+    console.error(err);
+    showInitError(`초기화 오류: ${err?.message || err}. 구절 선택이 동작하지 않을 수 있습니다.`);
+  }
+
   loadPrefs();
   applyPrefs();
   setupResizeHandles();
   cacheElements();
   bindEvents();
 
-  await ensureDataDirs();
+  try {
+    await ensureDataDirs();
+  } catch (err) {
+    console.error(err);
+    showInitError(`데이터 폴더 생성 실패: ${err?.message || err}. 문서\\일용할양식 폴더 권한을 확인해 주세요.`);
+  }
 
   initSidebar({
     onDateSelect: (date) => openDate(date),
@@ -54,14 +76,22 @@ async function init() {
     },
   });
 
-  const win = getCurrentWindow();
-  win.onCloseRequested(async (event) => {
-    if (isDirty) {
-      await doSave();
-    }
-  });
+  try {
+    const win = getCurrentWindow();
+    win.onCloseRequested(async () => {
+      if (isDirty) await doSave();
+    });
+  } catch (err) {
+    console.error('창 닫기 핸들러 등록 실패:', err);
+  }
 
-  await openDate(formatDate());
+  try {
+    await openDate(formatDate());
+  } catch (err) {
+    console.error(err);
+    showInitError(`오늘 기록 열기 실패: ${err?.message || err}`);
+    await refreshSidebar(formatDate());
+  }
 }
 
 function cacheElements() {
@@ -188,7 +218,12 @@ async function openDate(dateStr) {
       interpretation: '',
       meditation: '',
     };
-    await saveRecord(record);
+    try {
+      await saveRecord(record);
+    } catch (err) {
+      console.error('저장 실패:', err);
+      showInitError(`저장 실패: ${err?.message || err}`);
+    }
   }
 
   passageRange = parsePassageString(record.passage);

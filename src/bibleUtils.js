@@ -2,8 +2,15 @@ let bibleData = { books: [] };
 
 export async function loadBibleData() {
   if (bibleData.books.length) return bibleData;
-  const res = await fetch('./bibleData.json');
+  const url = new URL('./bibleData.json', import.meta.url);
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`bibleData.json 로드 실패 (${res.status})`);
+  }
   bibleData = await res.json();
+  if (!bibleData.books?.length) {
+    throw new Error('bibleData.json에 책 목록이 없습니다');
+  }
   return bibleData;
 }
 

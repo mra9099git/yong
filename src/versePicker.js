@@ -87,8 +87,12 @@ function updateSelectionDisplay() {
 function renderBooks() {
   const container = document.getElementById('picker-books');
   container.innerHTML = '<h4>성경</h4>';
-  const bibleData = getBibleData();
-  bibleData.books.forEach((book) => {
+  const books = getBibleData().books;
+  if (!books.length) {
+    container.innerHTML += '<p class="picker-empty">성경 목록을 불러오지 못했습니다.<br>앱을 다시 시작해 주세요.</p>';
+    return;
+  }
+  books.forEach((book) => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'picker-item' + (selection.book?.id === book.id ? ' active' : '');
