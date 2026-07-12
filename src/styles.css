@@ -608,6 +608,32 @@ textarea {
   border-top: 1px solid var(--border);
 }
 
+.picker-columns.key-mode .picker-col:not(.picker-verses) {
+  display: none;
+}
+
+.picker-columns.key-mode .picker-verses {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 6px;
+  padding: 12px 16px;
+}
+
+.picker-columns.key-mode .picker-verses h4 {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.picker-chapter-label {
+  width: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding: 4px 0 2px;
+}
+
 .picker-col {
   flex: 1;
   overflow-y: auto;

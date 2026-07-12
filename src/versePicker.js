@@ -1,12 +1,18 @@
-import { getBibleData, formatPassage } from './bibleUtils.js';
+import { getBibleData, formatPassage, enumerateVerses } from './bibleUtils.js';
 
 /** @typedef {import('./bibleUtils.js').VerseRange} VerseRange */
 
 let modalEl = null;
 let onSelectCallback = null;
 let pickerMode = 'passage';
+/** @type {VerseRange|null} */
+let keyPassageRange = null;
 let selection = { book: null, startChapter: null, startVerse: null, endChapter: null, endVerse: null };
 let clickPhase = 'start';
+
+function verseOrder(chapter, verse) {
+  return chapter * 10000 + verse;
+}
 
 function ensureModal() {
   if (modalEl) return modalEl;
@@ -22,7 +28,7 @@ function ensureModal() {
       </header>
       <p class="picker-hint" id="picker-hint">시작 절을 클릭한 뒤, 끝 절을 클릭하세요.</p>
       <div class="picker-selection" id="picker-selection"></div>
-      <div class="picker-columns">
+      <div class="picker-columns" id="picker-columns">
         <div class="picker-col" id="picker-books"></div>
         <div class="picker-col" id="picker-chapters"></div>
         <div class="picker-col picker-verses" id="picker-verses"></div>
@@ -55,9 +61,33 @@ function resetSelection(book = null) {
   updateSelectionDisplay();
 }
 
+function currentRange() {
+  if (selection.startVerse === null || !selection.book) return null;
+  return {
+    book: selection.book.korean,
+    startChapter: selection.startChapter,
+    startVerse: selection.startVerse,
+    endChapter: selection.endChapter ?? selection.startChapter,
+    endVerse: selection.endVerse ?? selection.startVerse,
+  };
+}
+
 function updateSelectionDisplay() {
   const el = document.getElementById('picker-selection');
   const confirmBtn = document.getElementById('picker-confirm');
+
+  if (pickerMode === 'key' && keyPassageRange) {
+    const range = currentRange();
+    if (!range) {
+      el.textContent = `${formatPassage(keyPassageRange)} 안에서 요절을 선택하세요`;
+      confirmBtn.disabled = true;
+      return;
+    }
+    el.textContent = `요절: ${formatPassage(range)}`;
+    confirmBtn.disabled = false;
+    return;
+  }
+
   if (!selection.book) {
     el.textContent = '책을 선택하세요';
     confirmBtn.disabled = true;
@@ -73,14 +103,7 @@ function updateSelectionDisplay() {
     confirmBtn.disabled = true;
     return;
   }
-  const range = {
-    book: selection.book.korean,
-    startChapter: selection.startChapter,
-    startVerse: selection.startVerse,
-    endChapter: selection.endChapter ?? selection.startChapter,
-    endVerse: selection.endVerse ?? selection.startVerse,
-  };
-  el.textContent = formatPassage(range);
+  el.textContent = formatPassage(currentRange());
   confirmBtn.disabled = false;
 }
 
@@ -150,24 +173,47 @@ function renderVerses() {
     btn.type = 'button';
     btn.className = 'picker-verse';
     btn.textContent = String(v);
-
-    const inRange = isVerseSelected(v);
-    if (inRange) btn.classList.add('in-range');
-
+    if (isVerseInSelection(selection.startChapter, v)) btn.classList.add('in-range');
     btn.addEventListener('click', () => handleVerseClick(v));
     grid.appendChild(btn);
   }
   container.appendChild(grid);
 }
 
-function isVerseSelected(v) {
+function renderPassageKeyVerses() {
+  const container = document.getElementById('picker-verses');
+  container.innerHTML = `<h4>${formatPassage(keyPassageRange)}</h4>`;
+  if (!keyPassageRange) return;
+
+  const verses = enumerateVerses(keyPassageRange);
+  const multiChapter = keyPassageRange.startChapter !== keyPassageRange.endChapter;
+  let lastChapter = null;
+
+  verses.forEach(({ chapter, verse }) => {
+    if (multiChapter && chapter !== lastChapter) {
+      const heading = document.createElement('div');
+      heading.className = 'picker-chapter-label';
+      heading.textContent = `${chapter}장`;
+      container.appendChild(heading);
+      lastChapter = chapter;
+    }
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'picker-verse';
+    btn.textContent = multiChapter ? `${chapter}:${verse}` : String(verse);
+    if (isVerseInSelection(chapter, verse)) btn.classList.add('in-range');
+    btn.addEventListener('click', () => handleKeyVerseClick(chapter, verse));
+    container.appendChild(btn);
+  });
+}
+
+function isVerseInSelection(chapter, verse) {
   if (selection.startVerse === null) return false;
-  const endV = selection.endVerse ?? selection.startVerse;
-  const endC = selection.endChapter ?? selection.startChapter;
-  if (selection.startChapter === endC) {
-    return v >= selection.startVerse && v <= endV;
-  }
-  return false;
+  const start = verseOrder(selection.startChapter, selection.startVerse);
+  const end = verseOrder(selection.endChapter ?? selection.startChapter, selection.endVerse ?? selection.startVerse);
+  const current = verseOrder(chapter, verse);
+  return current >= Math.min(start, end) && current <= Math.max(start, end);
 }
 
 function handleVerseClick(v) {
@@ -190,16 +236,34 @@ function handleVerseClick(v) {
   updateSelectionDisplay();
 }
 
+function handleKeyVerseClick(chapter, verse) {
+  if (clickPhase === 'start') {
+    selection.startChapter = chapter;
+    selection.startVerse = verse;
+    selection.endChapter = chapter;
+    selection.endVerse = verse;
+    clickPhase = 'end';
+  } else {
+    const clicked = verseOrder(chapter, verse);
+    const start = verseOrder(selection.startChapter, selection.startVerse);
+    if (clicked < start) {
+      selection.endChapter = selection.startChapter;
+      selection.endVerse = selection.startVerse;
+      selection.startChapter = chapter;
+      selection.startVerse = verse;
+    } else {
+      selection.endChapter = chapter;
+      selection.endVerse = verse;
+    }
+    clickPhase = 'start';
+  }
+  renderPassageKeyVerses();
+  updateSelectionDisplay();
+}
+
 function confirmPicker() {
-  if (!selection.book || selection.startVerse === null) return;
-  /** @type {VerseRange} */
-  const range = {
-    book: selection.book.korean,
-    startChapter: selection.startChapter,
-    startVerse: selection.startVerse,
-    endChapter: selection.endChapter ?? selection.startChapter,
-    endVerse: selection.endVerse ?? selection.startVerse,
-  };
+  const range = currentRange();
+  if (!range) return;
   if (onSelectCallback) onSelectCallback(range);
   closePicker();
 }
@@ -208,24 +272,56 @@ export function closePicker() {
   if (modalEl) modalEl.classList.add('hidden');
 }
 
+function renderPicker() {
+  const columns = document.getElementById('picker-columns');
+  const isKeyInPassage = pickerMode === 'key' && keyPassageRange;
+
+  columns.classList.toggle('key-mode', !!isKeyInPassage);
+
+  if (isKeyInPassage) {
+    document.getElementById('picker-books').innerHTML = '';
+    document.getElementById('picker-chapters').innerHTML = '';
+    renderPassageKeyVerses();
+  } else {
+    renderBooks();
+    renderChapters();
+    renderVerses();
+  }
+  updateSelectionDisplay();
+}
+
 /**
  * @param {'passage'|'key'} mode
  * @param {(range: VerseRange) => void} callback
  * @param {VerseRange|null} initial
+ * @param {VerseRange|null} passageForKey 요절 선택 시 현재 구절 범위
  */
-export function openVersePicker(mode, callback, initial = null) {
+export function openVersePicker(mode, callback, initial = null, passageForKey = null) {
   ensureModal();
   pickerMode = mode;
   onSelectCallback = callback;
+  keyPassageRange = mode === 'key' ? passageForKey : null;
 
   document.getElementById('picker-title').textContent =
     mode === 'key' ? '요절 선택' : '구절 선택';
-  document.getElementById('picker-hint').textContent =
-    mode === 'key'
-      ? '요절(단일 절 또는 범위)을 선택하세요.'
-      : '시작 절을 클릭한 뒤, 끝 절을 클릭하세요.';
 
-  if (initial) {
+  if (mode === 'key' && passageForKey) {
+    const book = getBibleData().books.find((b) => b.korean === passageForKey.book);
+    document.getElementById('picker-hint').textContent =
+      `${formatPassage(passageForKey)} 안에서 요절을 선택하세요. 시작 절 → 끝 절 순으로 클릭합니다.`;
+    if (initial && initial.book === passageForKey.book) {
+      selection = {
+        book: book || null,
+        startChapter: initial.startChapter,
+        startVerse: initial.startVerse,
+        endChapter: initial.endChapter,
+        endVerse: initial.endVerse,
+      };
+    } else {
+      selection = { book: book || null, startChapter: null, startVerse: null, endChapter: null, endVerse: null };
+    }
+    clickPhase = 'start';
+  } else if (initial) {
     const book = getBibleData().books.find((b) => b.korean === initial.book);
     selection = {
       book: book || null,
@@ -235,13 +331,18 @@ export function openVersePicker(mode, callback, initial = null) {
       endVerse: initial.endVerse,
     };
     clickPhase = 'start';
+    document.getElementById('picker-hint').textContent =
+      mode === 'key'
+        ? '요절(단일 절 또는 범위)을 선택하세요.'
+        : '시작 절을 클릭한 뒤, 끝 절을 클릭하세요.';
   } else {
     resetSelection(null);
+    document.getElementById('picker-hint').textContent =
+      mode === 'key'
+        ? '요절(단일 절 또는 범위)을 선택하세요.'
+        : '시작 절을 클릭한 뒤, 끝 절을 클릭하세요.';
   }
 
-  renderBooks();
-  renderChapters();
-  renderVerses();
-  updateSelectionDisplay();
+  renderPicker();
   modalEl.classList.remove('hidden');
 }

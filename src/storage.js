@@ -96,6 +96,14 @@ export async function loadRecord(dateStr) {
   return parsed;
 }
 
+export function recordHasContent(data) {
+  return !!(
+    data.passage?.trim() ||
+    data.interpretation?.trim() ||
+    data.meditation?.trim()
+  );
+}
+
 export async function saveRecord(data) {
   const path = recordPath(data.date);
   const yearDir = `${RECORDS_DIR}/${data.date.slice(0, 4)}`;
@@ -134,7 +142,7 @@ export async function listAllRecords() {
       const parsed = parseMarkdown(content);
       const name = file.split('/').pop().replace('.md', '');
       parsed.date = parsed.date || name;
-      records.push(parsed);
+      if (recordHasContent(parsed)) records.push(parsed);
     } catch {
       /* skip unreadable */
     }

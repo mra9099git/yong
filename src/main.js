@@ -4,6 +4,8 @@ import {
   formatDate,
   loadRecord,
   saveRecord,
+  deleteRecord,
+  recordHasContent,
 } from './storage.js';
 import {
   loadBibleData,
@@ -140,7 +142,7 @@ function bindEvents() {
       markDirty();
       updateHeader();
       refreshBible();
-    }, keyVerseRange);
+    }, keyVerseRange, passageRange);
   });
 
   els.btnToggleBible?.addEventListener('click', () => {
@@ -214,30 +216,21 @@ async function openDate(dateStr) {
   if (isDirty) await doSave();
   currentDate = dateStr;
 
-  let record = await loadRecord(dateStr);
-  if (!record) {
-    record = {
-      date: dateStr,
-      passage: '',
-      key_verse: '',
-      book: '',
-      interpretation: '',
-      meditation: '',
-    };
-    try {
-      await saveRecord(record);
-    } catch (err) {
-      console.error('저장 실패:', err);
-      showInitError(`저장 실패: ${err?.message || err}`);
-    }
+  const record = await loadRecord(dateStr);
+  if (record) {
+    passageRange = parsePassageString(record.passage);
+    keyVerseRange = parsePassageString(record.key_verse);
+    els.interpretation.value = record.interpretation || '';
+    els.meditation.value = record.meditation || '';
+  } else {
+    passageRange = null;
+    keyVerseRange = null;
+    els.interpretation.value = '';
+    els.meditation.value = '';
   }
 
-  passageRange = parsePassageString(record.passage);
-  keyVerseRange = parsePassageString(record.key_verse);
-  els.interpretation.value = record.interpretation || '';
-  els.meditation.value = record.meditation || '';
-
   isDirty = false;
+  els.saveStatus.textContent = '';
   updateHeader();
   await refreshBible();
   await refreshSidebar(currentDate);
@@ -331,11 +324,23 @@ async function doSave() {
     interpretation: els.interpretation.value,
     meditation: els.meditation.value,
   };
-  await saveRecord(record);
+
+  try {
+    if (recordHasContent(record)) {
+      await saveRecord(record);
+      const now = new Date();
+      const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      els.saveStatus.textContent = `자동 저장됨 ${time}`;
+    } else {
+      await deleteRecord(currentDate);
+      els.saveStatus.textContent = '';
+    }
+  } catch (err) {
+    console.error('저장 실패:', err);
+    showInitError(`저장 실패: ${err?.message || err}`);
+  }
+
   isDirty = false;
-  const now = new Date();
-  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  els.saveStatus.textContent = `자동 저장됨 ${time}`;
   await refreshSidebar(currentDate);
 }
 
