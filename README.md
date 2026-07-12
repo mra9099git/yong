@@ -4,7 +4,7 @@
 
 ## 기술 스택
 
-- **Tauri 2** + 바닐라 HTML/CSS/JS (빌드 도구 없음)
+- **Tauri 2** + 바닐라 HTML/CSS/JS (빌드 도구 없음, `window.__TAURI__` 사용)
 - 데이터 저장: Windows 문서 폴더 (`documentDir`)
 
 ## 로컬 실행
@@ -81,7 +81,9 @@ src/
   bibleUtils.js     구절 범위 유틸·경로 상수
   nltApi.js         NLT API (api.nlt.to)
   sidebar.js        달력·필터·목록·삭제
-  bibleData.json    66권 장별 절 수 + 한/영 책 이름
+  bibleData.json    66권 장별 절 수 + 한/영 책 이름 (빌드용)
+  bibleData.js      런타임 로드용 성경 메타데이터
+  tauriApi.js       Tauri 바닐라 JS API 접근 (window.__TAURI__)
 ```
 
 ## NLT API

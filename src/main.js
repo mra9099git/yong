@@ -1,4 +1,4 @@
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getWindowApi } from './tauriApi.js';
 import {
   ensureDataDirs,
   formatDate,
@@ -48,6 +48,11 @@ function showInitError(message) {
 }
 
 async function init() {
+  if (!window.__TAURI__) {
+    showInitError('Tauri 환경이 아닙니다. 실행.bat 또는 npm run tauri dev 로 실행해 주세요.');
+    return;
+  }
+
   try {
     await loadBibleData();
   } catch (err) {
@@ -77,6 +82,7 @@ async function init() {
   });
 
   try {
+    const { getCurrentWindow } = getWindowApi();
     const win = getCurrentWindow();
     win.onCloseRequested(async () => {
       if (isDirty) await doSave();
@@ -352,6 +358,7 @@ function loadPrefs() {
       if (toggle) toggle.checked = true;
     }
     if (prefs.windowWidth && prefs.windowHeight) {
+      const { getCurrentWindow } = getWindowApi();
       getCurrentWindow().setSize({ type: 'Logical', width: prefs.windowWidth, height: prefs.windowHeight }).catch(() => {});
     }
   } catch {
@@ -367,6 +374,7 @@ function savePrefs() {
     bibleCollapsed: document.getElementById('bible-panel')?.classList.contains('collapsed'),
     useNlt: getUseNlt(),
   };
+  const { getCurrentWindow } = getWindowApi();
   getCurrentWindow()
     .innerSize()
     .then((size) => {

@@ -1,14 +1,8 @@
-import {
-  exists,
-  readTextFile,
-  writeTextFile,
-  readDir,
-  remove,
-  mkdir,
-  rename,
-  BaseDirectory,
-} from '@tauri-apps/plugin-fs';
+import { getFs } from './tauriApi.js';
 import { RECORDS_DIR, BIBLE_DIR } from './bibleUtils.js';
+
+const { exists, readTextFile, writeTextFile, readDir, remove, mkdir, rename, BaseDirectory } =
+  getFs();
 
 const BASE = { baseDir: BaseDirectory.Document };
 

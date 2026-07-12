@@ -1,5 +1,7 @@
-import { fetch } from '@tauri-apps/plugin-http';
+import { getHttp } from './tauriApi.js';
 import { getBookByKorean } from './bibleUtils.js';
+
+const { fetch } = getHttp();
 
 const API_BASE = 'https://api.nlt.to/api/passages';
 
@@ -50,11 +52,8 @@ export function parseNltHtml(html) {
     const body = doc.body?.innerHTML || html;
     const parts = body.split(/<span class="vn">(\d+)<\/span>/i);
     let currentChapter = '1';
-    const chHeader = body.match(/class="bk_ch_vs_header"[^>]*>([^<:]+):/i);
-    if (chHeader) {
-      const chNum = body.match(/ch="(\d+)"/);
-      if (chNum) currentChapter = chNum[1];
-    }
+    const chNum = body.match(/ch="(\d+)"/);
+    if (chNum) currentChapter = chNum[1];
     for (let i = 1; i < parts.length; i += 2) {
       const vn = parts[i];
       const text = parts[i + 1]?.replace(/<[^>]+>/g, '').trim() || '';
