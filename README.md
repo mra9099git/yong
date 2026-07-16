@@ -32,9 +32,11 @@
 요약:
 
 1. Git 없으면 https://git-scm.com/download/win (winget silent는 멈추기 쉬움)
-2. `cd %OneDrive%\0VibeCoding\daily-bread` → `git checkout cursor/daily-bread-app-a456` → `git pull`
+2. **`업데이트.bat` 더블클릭** (최신 코드 받기)
 3. `install-deps.bat` (없는 도구만 설치) → 창 모두 닫았다 다시 열기
 4. `check-tools.bat` → `실행.bat`
+
+평소 코드만 최신으로: **`업데이트.bat`** → **`실행.bat`**
 
 Windows에서 `npm run tauri build`로 설치 파일을 만들 수 있습니다.
 

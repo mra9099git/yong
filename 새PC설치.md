@@ -34,28 +34,22 @@ winget 조용한 설치는 **프로그레스 끝(MB 꽉 찬 뒤)에서 자주 �
 git --version
 ```
 
-### 2) 폴더로 이동 + 최신 코드
+### 2) 최신 코드 받기
+
+탐색기에서 `daily-bread` 폴더를 연 뒤 **`업데이트.bat` 더블클릭**  
+→ 브랜치 맞추고 `git pull`까지 해 줍니다. (경로 직접 칠 필요 없음)
+
+PowerShell로 할 때만:
 
 ```powershell
 cd $env:OneDrive\0VibeCoding\daily-bread
-git status
-git fetch
-git checkout cursor/daily-bread-app-a456
-git pull
+.\업데이트.bat
 ```
 
 #### 자주 막히는 경우
 
-**`install-deps.bat` 이 없다**  
-→ 아직 예전 브랜치입니다. 위 `git checkout cursor/daily-bread-app-a456` 를 하세요.
-
-**`Your local changes ... package-lock.json would be overwritten`**  
-→ 아래 한 줄 후 다시 checkout:
-
-```powershell
-git checkout -- package-lock.json
-git checkout cursor/daily-bread-app-a456
-```
+**`업데이트.bat` / `install-deps.bat` 이 없다**  
+→ 아직 예전 브랜치이거나 pull 전입니다. Git 설치 후 아래 clone을 다시 하거나, Cursor/GitHub에서 최신 브랜치를 받으세요.
 
 **폴더 자체가 없다 (첫 clone)**  
 
