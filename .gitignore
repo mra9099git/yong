@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# 묵상·성경 데이터 (OneDrive로만 동기화, Git에는 올리지 않음)
+일용할양식/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

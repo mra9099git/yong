@@ -6,7 +6,7 @@ const { exists, readTextFile, writeTextFile, readDir, remove, mkdir, rename } = 
 /** @type {Promise<string>|null} */
 let dataRootPromise = null;
 
-/** OneDrive\0VibeCoding\일용할양식 절대 경로 */
+/** OneDrive\0VibeCoding\daily-bread\일용할양식 절대 경로 */
 export function getDataRoot() {
   if (!dataRootPromise) {
     dataRootPromise = invoke('get_data_root');
@@ -14,7 +14,7 @@ export function getDataRoot() {
   return dataRootPromise;
 }
 
-/** OneDrive\0VibeCoding\daily-bread 절대 경로 (권장 앱 위치) */
+/** OneDrive\0VibeCoding\daily-bread 절대 경로 (앱+데이터 통합 폴더) */
 export function getAppRoot() {
   return invoke('get_app_root');
 }

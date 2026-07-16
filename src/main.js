@@ -73,7 +73,7 @@ async function init() {
   } catch (err) {
     console.error(err);
     showInitError(
-      `데이터 폴더 생성 실패: ${err?.message || err}. OneDrive\\0VibeCoding\\일용할양식 경로를 확인해 주세요.`,
+      `데이터 폴더 생성 실패: ${err?.message || err}. OneDrive\\0VibeCoding\\daily-bread\\일용할양식 경로를 확인해 주세요.`,
     );
   }
 

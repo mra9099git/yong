@@ -10,18 +10,21 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-/// OneDrive\0VibeCoding\일용할양식 — 묵상 기록·성경 DB
+/// OneDrive\0VibeCoding\daily-bread\일용할양식 — 묵상 기록·성경 DB
 #[tauri::command]
 fn get_data_root() -> Result<String, String> {
-    let root = resolve_onedrive()?.join("0VibeCoding").join("일용할양식");
+    let root = app_root_path()?.join("일용할양식");
     Ok(root.to_string_lossy().into_owned())
 }
 
-/// OneDrive\0VibeCoding\daily-bread — 앱(소스) 권장 위치
+/// OneDrive\0VibeCoding\daily-bread — 앱 + 데이터 통합 폴더
 #[tauri::command]
 fn get_app_root() -> Result<String, String> {
-    let root = resolve_onedrive()?.join("0VibeCoding").join("daily-bread");
-    Ok(root.to_string_lossy().into_owned())
+    Ok(app_root_path()?.to_string_lossy().into_owned())
+}
+
+fn app_root_path() -> Result<PathBuf, String> {
+    Ok(resolve_onedrive()?.join("0VibeCoding").join("daily-bread"))
 }
 
 fn resolve_onedrive() -> Result<PathBuf, String> {

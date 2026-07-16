@@ -9,57 +9,57 @@
     {
       "identifier": "fs:allow-exists",
       "allow": [
-        { "path": "$HOME/OneDrive/0VibeCoding" },
-        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread" },
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread/**" }
       ]
     },
     {
       "identifier": "fs:allow-read-text-file",
       "allow": [
-        { "path": "$HOME/OneDrive/0VibeCoding" },
-        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread" },
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread/**" }
       ]
     },
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [
-        { "path": "$HOME/OneDrive/0VibeCoding" },
-        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread" },
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread/**" }
       ]
     },
     {
       "identifier": "fs:allow-read-dir",
       "allow": [
-        { "path": "$HOME/OneDrive/0VibeCoding" },
-        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread" },
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread/**" }
       ]
     },
     {
       "identifier": "fs:allow-mkdir",
       "allow": [
-        { "path": "$HOME/OneDrive/0VibeCoding" },
-        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread" },
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread/**" }
       ]
     },
     {
       "identifier": "fs:allow-remove",
       "allow": [
-        { "path": "$HOME/OneDrive/0VibeCoding" },
-        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread" },
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread/**" }
       ]
     },
     {
       "identifier": "fs:allow-rename",
       "allow": [
-        { "path": "$HOME/OneDrive/0VibeCoding" },
-        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread" },
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread/**" }
       ]
     },
     {
       "identifier": "fs:allow-stat",
       "allow": [
-        { "path": "$HOME/OneDrive/0VibeCoding" },
-        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread" },
+        { "path": "$HOME/OneDrive/0VibeCoding/daily-bread/**" }
       ]
     },
     {

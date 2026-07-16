@@ -56,18 +56,11 @@ if defined OneDrive (
   set "OD=%USERPROFILE%\OneDrive"
 )
 
-set "VIBE=%OD%\0VibeCoding"
-set "APP=%VIBE%\daily-bread"
-set "DATA=%VIBE%\일용할양식"
-
-if exist "%VIBE%\" (
-  echo [OK] 앱 작업 폴더 상위: %VIBE%
-) else (
-  echo [!] 없음: %VIBE%  — 폴더를 만들면 됩니다
-)
+set "APP=%OD%\0VibeCoding\daily-bread"
+set "DATA=%APP%\일용할양식"
 
 if exist "%APP%\" (
-  echo [OK] 앱 코드: %APP%
+  echo [OK] 통합 폴더(앱+데이터): %APP%
 ) else (
   echo [!] 없음: %APP%  — 여기에 저장소를 clone 하세요
 )

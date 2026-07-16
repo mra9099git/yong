@@ -2,31 +2,27 @@
 
 매일 성경 묵상(일용할 양식)을 기록하는 Tauri 2 데스크톱 앱입니다.
 
-여러 PC에서 같은 기록·성경 DB를 쓰도록 **OneDrive `0VibeCoding` 폴더**에 앱과 데이터를 둡니다.
+여러 PC에서 같은 기록·성경 DB를 쓰도록 **OneDrive `0VibeCoding\daily-bread`** 한 폴더에 앱과 데이터를 함께 둡니다.
 
-## 폴더 구조 (권장)
-
-PC 사용자 이름이 달라도 OneDrive 환경변수를 쓰므로 동기화됩니다.
+## 폴더 구조
 
 ```
-%OneDrive%\0VibeCoding\
-  daily-bread\                 ← 앱 코드 (이 Git 저장소)
-  일용할양식\
-    양식\2026\2026-07-11.md    ← 하루 = 마크다운 파일 하나
-    성경\개역개정\마태복음.json ← 직접 입력하는 개역개정 성경 DB
+%OneDrive%\0VibeCoding\daily-bread\
+  src\  src-tauri\  package.json …   ← 앱 코드 (Git)
+  일용할양식\                         ← 데이터 (Git 제외, OneDrive만)
+    양식\2026\2026-07-11.md
+    성경\개역개정\마태복음.json
 ```
 
-예시 (이 PC):
+예시: `C:\Users\mra90\OneDrive\0VibeCoding\daily-bread`
 
-- 앱: `C:\Users\mra90\OneDrive\0VibeCoding\daily-bread`
-- 데이터: `C:\Users\mra90\OneDrive\0VibeCoding\일용할양식`
-
-> 예전에 `문서\일용할양식`에 둔 데이터가 있으면 `0VibeCoding\일용할양식`으로 통째로 옮기면 됩니다.
+> 예전에 `문서\일용할양식` 또는 `0VibeCoding\일용할양식`에 둔 데이터가 있으면  
+> `daily-bread\일용할양식`으로 옮기면 됩니다.
 
 ## 기술 스택
 
 - **Tauri 2** + 바닐라 HTML/CSS/JS (빌드 도구 없음, `window.__TAURI__` 사용)
-- 데이터 저장: OneDrive `0VibeCoding\일용할양식` (절대 경로, `OneDrive` 환경변수 기준)
+- 데이터: `daily-bread\일용할양식` (`OneDrive` 환경변수 기준 절대 경로)
 
 ## 이 PC에 처음 설치
 
@@ -97,15 +93,15 @@ src/
   index.html        화면 뼈대
   styles.css
   main.js           이벤트 연결·화면 갱신
-  storage.js        마크다운·성경 JSON 읽기/쓰기 (OneDrive 경로)
+  storage.js        마크다운·성경 JSON 읽기/쓰기
   versePicker.js    책→장→절 범위 선택
   bibleText.js      본문 조회·입력 모드·요절 강조
   bibleUtils.js     구절 범위 유틸·경로 상수
   nltApi.js         NLT API (api.nlt.to)
   sidebar.js        달력·필터·목록·삭제
-  bibleData.json    66권 장별 절 수 + 한/영 책 이름 (빌드용)
+  bibleData.json    66권 장별 절 수 + 한/영 책 이름
   bibleData.js      런타임 로드용 성경 메타데이터
-  tauriApi.js       Tauri 바닐라 JS API 접근 (window.__TAURI__)
+  tauriApi.js       Tauri 바닐라 JS API 접근
 ```
 
 ## NLT API
