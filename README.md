@@ -4,6 +4,9 @@
 
 여러 PC에서 같은 기록·성경 DB를 쓰도록 **OneDrive `0VibeCoding\daily-bread`** 한 폴더에 앱과 데이터를 함께 둡니다.
 
+> **다른 PC(본가 등)에서 다시 세팅할 때** → [`새PC설치.md`](./새PC설치.md) 만 보면 됩니다.  
+> OneDrive가 코드·데이터는 맞춰 주고, Git/Node/Rust는 PC마다 `install-deps.bat`으로 깔면 됩니다.
+
 ## 폴더 구조
 
 ```
@@ -26,23 +29,14 @@
 
 ## 이 PC에 처음 설치
 
-1. 이 폴더에서 **`install-deps.bat` 더블클릭**  
-   (Node.js + Rust + C++ Build Tools 자동 설치)  
-2. 끝나면 **Cursor·터미널을 모두 닫았다가 다시 열기** (PATH 반영)  
-3. OneDrive에 `0VibeCoding` 폴더 확인  
-4. 앱 코드 clone (아직 없다면):
+자세한 순서·오늘 겪은 함정은 **[`새PC설치.md`](./새PC설치.md)** 참고.
 
-```bat
-cd %OneDrive%\0VibeCoding
-git clone https://github.com/mra9099git/yong.git daily-bread
-cd daily-bread
-git checkout cursor/daily-bread-app-a456
-```
+요약:
 
-5. `git pull` 후 `check-tools.bat` → Node / cargo OK 확인  
-6. `실행.bat`
-
-`cargo … program not found` 가 나오면 `install-deps.bat`을 아직 안 돌렸거나, 설치 후 창을 다시 열지 않은 경우입니다.
+1. Git 없으면 https://git-scm.com/download/win (winget silent는 멈추기 쉬움)
+2. `cd %OneDrive%\0VibeCoding\daily-bread` → `git checkout cursor/daily-bread-app-a456` → `git pull`
+3. `install-deps.bat` (없는 도구만 설치) → 창 모두 닫았다 다시 열기
+4. `check-tools.bat` → `실행.bat`
 
 Windows에서 `npm run tauri build`로 설치 파일을 만들 수 있습니다.
 
