@@ -16,7 +16,7 @@ set DID_INSTALL=0
 
 where winget >nul 2>&1
 if errorlevel 1 (
-  echo [안내] winget이 없습니다. Rust는 직접 다운로드로 설치합니다.
+  echo [안내] winget이 없습니다. 일부 항목은 수동 설치가 필요합니다.
   set HAS_WINGET=0
 ) else (
   set HAS_WINGET=1
@@ -24,7 +24,33 @@ if errorlevel 1 (
 )
 
 echo.
-echo --- 1/3 Node.js ---
+echo --- 1/4 Git ---
+call :EnsureGitInPath
+where git >nul 2>&1
+if errorlevel 1 (
+  if "!HAS_WINGET!"=="1" (
+    echo 없음 → Git 설치 중...
+    winget install -e --id Git.Git --accept-package-agreements --accept-source-agreements
+    if errorlevel 1 (
+      echo [X] Git 설치 실패 — https://git-scm.com/download/win 에서 직접 설치해 주세요.
+      start "" "https://git-scm.com/download/win"
+      set FAIL=1
+    ) else (
+      echo [OK] Git 설치 요청 완료
+      set DID_INSTALL=1
+      call :EnsureGitInPath
+    )
+  ) else (
+    echo [X] Git 없음. https://git-scm.com/download/win 에서 설치해 주세요.
+    start "" "https://git-scm.com/download/win"
+    set FAIL=1
+  )
+) else (
+  for /f "delims=" %%v in ('git --version') do echo [건너뜀] 이미 설치됨: %%v
+)
+
+echo.
+echo --- 2/4 Node.js ---
 where node >nul 2>&1
 if errorlevel 1 (
   if "!HAS_WINGET!"=="1" (
@@ -47,9 +73,8 @@ if errorlevel 1 (
 )
 
 echo.
-echo --- 2/3 Rust (cargo) ---
-rem 새 PATH가 아직 안 잡힌 경우도 인식
-if not defined CARGO_HOME if exist "%USERPROFILE%\.cargo\bin\cargo.exe" (
+echo --- 3/4 Rust (cargo) ---
+if exist "%USERPROFILE%\.cargo\bin\cargo.exe" (
   set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
 )
 where cargo >nul 2>&1
@@ -72,7 +97,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo --- 3/3 Visual Studio C++ Build Tools ---
+echo --- 4/4 Visual Studio C++ Build Tools ---
 call :HasCppTools
 if "!HAS_CPP!"=="1" (
   echo [건너뜀] 이미 설치됨: C++ Build Tools / Visual Studio C++
@@ -109,8 +134,8 @@ if "!DID_INSTALL!"=="0" if "!FAIL!"=="0" (
 echo ========================================
 echo.
 if "!DID_INSTALL!"=="1" (
-  echo ★ 새로 설치한 경우: Cursor와 모든 터미널/CMD 창을 완전히 닫았다가
-  echo   다시 연 다음 진행하세요.
+  echo ★ 새로 설치한 경우: Cursor와 모든 터미널/CMD/PowerShell 창을
+  echo   완전히 닫았다가 다시 연 다음 진행하세요.
   echo.
 )
 echo   다음: check-tools.bat  →  실행.bat
@@ -119,16 +144,23 @@ pause
 endlocal
 exit /b 0
 
+:EnsureGitInPath
+if exist "%ProgramFiles%\Git\cmd\git.exe" (
+  set "PATH=%ProgramFiles%\Git\cmd;%PATH%"
+)
+if exist "%LocalAppData%\Programs\Git\cmd\git.exe" (
+  set "PATH=%LocalAppData%\Programs\Git\cmd;%PATH%"
+)
+exit /b 0
+
 :HasCppTools
 set HAS_CPP=0
-rem VS / Build Tools 설치 흔적 확인
 if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" (
   for /f "delims=" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2^>nul') do (
     if not "%%i"=="" set HAS_CPP=1
   )
 )
 if "!HAS_CPP!"=="1" exit /b 0
-rem link.exe / cl.exe 가 PATH에 있으면 OK
 where link >nul 2>&1 && set HAS_CPP=1
 where cl >nul 2>&1 && set HAS_CPP=1
 exit /b 0

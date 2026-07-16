@@ -9,6 +9,18 @@ echo.
 
 set FAIL=0
 
+if exist "%ProgramFiles%\Git\cmd\git.exe" set "PATH=%ProgramFiles%\Git\cmd;%PATH%"
+if exist "%LocalAppData%\Programs\Git\cmd\git.exe" set "PATH=%LocalAppData%\Programs\Git\cmd;%PATH%"
+if exist "%USERPROFILE%\.cargo\bin\cargo.exe" set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
+
+where git >nul 2>&1
+if errorlevel 1 (
+  echo [X] Git 없음  — install-deps.bat 실행 또는 https://git-scm.com/download/win
+  set FAIL=1
+) else (
+  for /f "delims=" %%v in ('git --version') do echo [OK] %%v
+)
+
 where node >nul 2>&1
 if errorlevel 1 (
   echo [X] Node.js 없음  — https://nodejs.org 에서 LTS 설치
