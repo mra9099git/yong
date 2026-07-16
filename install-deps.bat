@@ -28,11 +28,14 @@ echo --- 1/4 Git ---
 call :EnsureGitInPath
 where git >nul 2>&1
 if errorlevel 1 (
+  echo 없음 → Git 설치 창을 엽니다.
+  echo   ^(winget 조용한 설치는 프로그레스 끝에서 자주 멈추므로 GUI로 설치합니다^)
+  echo   설치 창이 뜨면 Next를 눌러 기본값으로 끝까지 설치하세요.
+  echo.
   if "!HAS_WINGET!"=="1" (
-    echo 없음 → Git 설치 중...
-    winget install -e --id Git.Git --accept-package-agreements --accept-source-agreements
+    winget install -e --id Git.Git --source winget --interactive --accept-package-agreements --accept-source-agreements
     if errorlevel 1 (
-      echo [X] Git 설치 실패 — https://git-scm.com/download/win 에서 직접 설치해 주세요.
+      echo winget 실패 → 공식 다운로드 페이지를 엽니다.
       start "" "https://git-scm.com/download/win"
       set FAIL=1
     ) else (
@@ -41,8 +44,8 @@ if errorlevel 1 (
       call :EnsureGitInPath
     )
   ) else (
-    echo [X] Git 없음. https://git-scm.com/download/win 에서 설치해 주세요.
     start "" "https://git-scm.com/download/win"
+    echo [!] 다운로드 페이지에서 64-bit Git for Windows Setup 을 설치하세요.
     set FAIL=1
   )
 ) else (
