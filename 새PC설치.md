@@ -97,13 +97,14 @@ cd $env:OneDrive\0VibeCoding\daily-bread
 
 ## 현재 작업 상태 (메모)
 
-- 저장소: https://github.com/mra9099git/yong  
-- 작업 브랜치: `cursor/daily-bread-app-a456`  
-- PR: https://github.com/mra9099git/yong/pull/2  
-- 이 PC(2026-07-16): Git·Node 확인됨, Rustup·VS Build Tools 설치 진행 중이었음  
-- 앱/데이터 루트: `OneDrive\0VibeCoding\daily-bread`
+- 작업 브랜치: `cursor/daily-bread-app-a456`
+- 앱/데이터 루트: `%OneDrive%\0VibeCoding\daily-bread` (사용자 이름은 PC마다 다름)
+- 묵상 데이터(`일용할양식\`)는 Git에 올리지 않음
 
 나중에 `main`에 병합되면 checkout 브랜치 이름만 `main`으로 바꾸면 됩니다.
+
+> 이 저장소가 **Public**이면 폴더 구조 안내도 공개됩니다.  
+> 개인용만 쓰려면 GitHub에서 저장소를 **Private**으로 바꾸세요.
 
 ## 막히면
 

@@ -17,8 +17,6 @@
     성경\개역개정\마태복음.json
 ```
 
-예시: `C:\Users\mra90\OneDrive\0VibeCoding\daily-bread`
-
 > 예전에 `문서\일용할양식` 또는 `0VibeCoding\일용할양식`에 둔 데이터가 있으면  
 > `daily-bread\일용할양식`으로 옮기면 됩니다.
 
