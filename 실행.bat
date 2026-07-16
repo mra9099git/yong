@@ -22,17 +22,21 @@ if errorlevel 1 (
 
 where cargo >nul 2>&1
 if errorlevel 1 (
+  if exist "%USERPROFILE%\.cargo\bin\cargo.exe" (
+    set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
+  )
+)
+where cargo >nul 2>&1
+if errorlevel 1 (
   echo [오류] Rust의 cargo가 없습니다. ^(지금 보신 "program not found" 원인^)
   echo.
-  echo   설치 방법:
-  echo   1^) https://rustup.rs 접속
-  echo   2^) "rustup-init.exe" 다운로드 후 실행
-  echo   3^) 기본값 그대로 Enter로 설치
-  echo   4^) 설치 중 Visual Studio / C++ Build Tools 안내가 나오면 같이 설치
-  echo   5^) 설치가 끝나면 Cursor와 터미널을 모두 종료했다가 다시 실행
-  echo   6^) 이 폴더에서 check-tools.bat 로 확인 후 다시 실행.bat
+  echo   제가 이 Windows PC에 직접 설치할 수는 없습니다.
+  echo   대신 자동 설치 스크립트를 실행해 주세요:
   echo.
-  echo   또는 이 폴더의 install-rust.bat 을 실행해도 됩니다.
+  echo   → install-deps.bat  더블클릭
+  echo.
+  echo   끝나면 Cursor/터미널을 모두 닫았다가 다시 열고
+  echo   check-tools.bat → 실행.bat 순서로 진행하세요.
   echo.
   pause
   exit /b 1

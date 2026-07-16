@@ -26,13 +26,11 @@
 
 ## 이 PC에 처음 설치
 
-1. **Node.js LTS** — https://nodejs.org  
-2. **Rust** — https://rustup.rs (`rustup-init.exe` 기본 설치)  
-   - 설치 중 Visual Studio / **C++ Build Tools** 안내가 나오면 함께 설치  
-   - 또는 이 폴더의 `install-rust.bat` 실행  
-3. 설치 후 **Cursor·터미널을 모두 닫았다가 다시 열기** (PATH 반영)  
-4. OneDrive에 `0VibeCoding` 폴더 확인  
-5. 앱 코드 clone:
+1. 이 폴더에서 **`install-deps.bat` 더블클릭**  
+   (Node.js + Rust + C++ Build Tools 자동 설치)  
+2. 끝나면 **Cursor·터미널을 모두 닫았다가 다시 열기** (PATH 반영)  
+3. OneDrive에 `0VibeCoding` 폴더 확인  
+4. 앱 코드 clone (아직 없다면):
 
 ```bat
 cd %OneDrive%\0VibeCoding
@@ -41,10 +39,10 @@ cd daily-bread
 git checkout cursor/daily-bread-app-a456
 ```
 
-6. `check-tools.bat` → Node / cargo / OneDrive가 OK인지 확인  
-7. `실행.bat`
+5. `git pull` 후 `check-tools.bat` → Node / cargo OK 확인  
+6. `실행.bat`
 
-`cargo … program not found` 가 나오면 Rust가 없거나, 설치 후 창을 다시 열지 않은 경우입니다.
+`cargo … program not found` 가 나오면 `install-deps.bat`을 아직 안 돌렸거나, 설치 후 창을 다시 열지 않은 경우입니다.
 
 Windows에서 `npm run tauri build`로 설치 파일을 만들 수 있습니다.
 
