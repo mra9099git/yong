@@ -1,10 +1,33 @@
-import { getFs } from './tauriApi.js';
+import { getFs, invoke } from './tauriApi.js';
 import { RECORDS_DIR, BIBLE_DIR } from './bibleUtils.js';
 
-const { exists, readTextFile, writeTextFile, readDir, remove, mkdir, rename, BaseDirectory } =
-  getFs();
+const { exists, readTextFile, writeTextFile, readDir, remove, mkdir, rename } = getFs();
 
-const BASE = { baseDir: BaseDirectory.Document };
+/** @type {Promise<string>|null} */
+let dataRootPromise = null;
+
+/** OneDrive\0VibeCoding\일용할양식 절대 경로 */
+export function getDataRoot() {
+  if (!dataRootPromise) {
+    dataRootPromise = invoke('get_data_root');
+  }
+  return dataRootPromise;
+}
+
+/** OneDrive\0VibeCoding\daily-bread 절대 경로 (권장 앱 위치) */
+export function getAppRoot() {
+  return invoke('get_app_root');
+}
+
+function joinPath(root, rel) {
+  const base = String(root).replace(/[/\\]+$/, '');
+  const rest = String(rel).replace(/^[/\\]+/, '').replace(/\\/g, '/');
+  return `${base}/${rest}`;
+}
+
+async function abs(rel) {
+  return joinPath(await getDataRoot(), rel);
+}
 
 export function formatDate(date = new Date()) {
   const y = date.getFullYear();
@@ -18,20 +41,21 @@ export function parseDate(str) {
   return new Date(y, m - 1, d);
 }
 
-function recordPath(dateStr) {
+async function recordPath(dateStr) {
   const year = dateStr.slice(0, 4);
-  return `${RECORDS_DIR}/${year}/${dateStr}.md`;
+  return abs(`${RECORDS_DIR}/${year}/${dateStr}.md`);
 }
 
-function biblePath(bookName) {
-  return `${BIBLE_DIR}/${bookName}.json`;
+async function biblePath(bookName) {
+  return abs(`${BIBLE_DIR}/${bookName}.json`);
 }
 
 export async function ensureDataDirs() {
   const year = new Date().getFullYear().toString();
   for (const dir of [`${RECORDS_DIR}/${year}`, BIBLE_DIR]) {
-    const ok = await exists(dir, BASE);
-    if (!ok) await mkdir(dir, { ...BASE, recursive: true });
+    const path = await abs(dir);
+    const ok = await exists(path);
+    if (!ok) await mkdir(path, { recursive: true });
   }
 }
 
@@ -87,10 +111,10 @@ export function serializeMarkdown(data) {
 }
 
 export async function loadRecord(dateStr) {
-  const path = recordPath(dateStr);
-  const ok = await exists(path, BASE);
+  const path = await recordPath(dateStr);
+  const ok = await exists(path);
   if (!ok) return null;
-  const content = await readTextFile(path, BASE);
+  const content = await readTextFile(path);
   const parsed = parseMarkdown(content);
   parsed.date = parsed.date || dateStr;
   return parsed;
@@ -105,25 +129,25 @@ export function recordHasContent(data) {
 }
 
 export async function saveRecord(data) {
-  const path = recordPath(data.date);
-  const yearDir = `${RECORDS_DIR}/${data.date.slice(0, 4)}`;
-  const dirOk = await exists(yearDir, BASE);
-  if (!dirOk) await mkdir(yearDir, { ...BASE, recursive: true });
-  await writeTextFile(path, serializeMarkdown(data), BASE);
+  const path = await recordPath(data.date);
+  const yearDir = await abs(`${RECORDS_DIR}/${data.date.slice(0, 4)}`);
+  const dirOk = await exists(yearDir);
+  if (!dirOk) await mkdir(yearDir, { recursive: true });
+  await writeTextFile(path, serializeMarkdown(data));
 }
 
 export async function deleteRecord(dateStr) {
-  const path = recordPath(dateStr);
-  const ok = await exists(path, BASE);
-  if (ok) await remove(path, BASE);
+  const path = await recordPath(dateStr);
+  const ok = await exists(path);
+  if (ok) await remove(path);
 }
 
 async function collectMdFiles(dir, files = []) {
-  const ok = await exists(dir, BASE);
+  const ok = await exists(dir);
   if (!ok) return files;
-  const entries = await readDir(dir, BASE);
+  const entries = await readDir(dir);
   for (const entry of entries) {
-    const sub = `${dir}/${entry.name}`;
+    const sub = joinPath(dir, entry.name);
     if (entry.isDirectory) {
       await collectMdFiles(sub, files);
     } else if (entry.name.endsWith('.md')) {
@@ -134,13 +158,14 @@ async function collectMdFiles(dir, files = []) {
 }
 
 export async function listAllRecords() {
-  const files = await collectMdFiles(RECORDS_DIR);
+  const recordsDir = await abs(RECORDS_DIR);
+  const files = await collectMdFiles(recordsDir);
   const records = [];
   for (const file of files) {
     try {
-      const content = await readTextFile(file, BASE);
+      const content = await readTextFile(file);
       const parsed = parseMarkdown(content);
-      const name = file.split('/').pop().replace('.md', '');
+      const name = file.split(/[/\\]/).pop().replace('.md', '');
       parsed.date = parsed.date || name;
       if (recordHasContent(parsed)) records.push(parsed);
     } catch {
@@ -152,26 +177,24 @@ export async function listAllRecords() {
 }
 
 export async function loadBibleBook(bookName) {
-  const path = biblePath(bookName);
-  const ok = await exists(path, BASE);
+  const path = await biblePath(bookName);
+  const ok = await exists(path);
   if (!ok) return {};
-  const content = await readTextFile(path, BASE);
+  const content = await readTextFile(path);
   return JSON.parse(content);
 }
 
 export async function saveBibleBook(bookName, data) {
-  const path = biblePath(bookName);
+  const path = await biblePath(bookName);
   const tmpPath = `${path}.tmp`;
-  const dirOk = await exists(BIBLE_DIR, BASE);
-  if (!dirOk) await mkdir(BIBLE_DIR, { ...BASE, recursive: true });
+  const bibleDir = await abs(BIBLE_DIR);
+  const dirOk = await exists(bibleDir);
+  if (!dirOk) await mkdir(bibleDir, { recursive: true });
   const json = JSON.stringify(data, null, 2);
-  await writeTextFile(tmpPath, json, BASE);
-  const targetExists = await exists(path, BASE);
-  if (targetExists) await remove(path, BASE);
-  await rename(tmpPath, path, {
-    fromPathBaseDir: BaseDirectory.Document,
-    toPathBaseDir: BaseDirectory.Document,
-  });
+  await writeTextFile(tmpPath, json);
+  const targetExists = await exists(path);
+  if (targetExists) await remove(path);
+  await rename(tmpPath, path);
 }
 
 export async function getRecordDates() {

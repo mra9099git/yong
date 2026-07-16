@@ -6,8 +6,62 @@
   "permissions": [
     "core:default",
     "fs:default",
-    "fs:allow-document-read-recursive",
-    "fs:allow-document-write-recursive",
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        { "path": "$HOME/OneDrive/0VibeCoding" },
+        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        { "path": "$HOME/OneDrive/0VibeCoding" },
+        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        { "path": "$HOME/OneDrive/0VibeCoding" },
+        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        { "path": "$HOME/OneDrive/0VibeCoding" },
+        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [
+        { "path": "$HOME/OneDrive/0VibeCoding" },
+        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [
+        { "path": "$HOME/OneDrive/0VibeCoding" },
+        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-rename",
+      "allow": [
+        { "path": "$HOME/OneDrive/0VibeCoding" },
+        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-stat",
+      "allow": [
+        { "path": "$HOME/OneDrive/0VibeCoding" },
+        { "path": "$HOME/OneDrive/0VibeCoding/**" }
+      ]
+    },
     {
       "identifier": "http:default",
       "allow": [{ "url": "https://api.nlt.to/**" }]

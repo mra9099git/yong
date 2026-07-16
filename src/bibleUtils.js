@@ -13,9 +13,9 @@ export function getBibleData() {
   return bibleData;
 }
 
-export const DATA_ROOT = '일용할양식';
-export const RECORDS_DIR = `${DATA_ROOT}/양식`;
-export const BIBLE_DIR = `${DATA_ROOT}/성경/개역개정`;
+/** 데이터 루트(OneDrive\0VibeCoding\일용할양식) 기준 상대 경로 */
+export const RECORDS_DIR = '양식';
+export const BIBLE_DIR = '성경/개역개정';
 
 export function getBookByKorean(name) {
   return bibleData.books.find((b) => b.korean === name);

@@ -72,7 +72,9 @@ async function init() {
     await ensureDataDirs();
   } catch (err) {
     console.error(err);
-    showInitError(`데이터 폴더 생성 실패: ${err?.message || err}. 문서\\일용할양식 폴더 권한을 확인해 주세요.`);
+    showInitError(
+      `데이터 폴더 생성 실패: ${err?.message || err}. OneDrive\\0VibeCoding\\일용할양식 경로를 확인해 주세요.`,
+    );
   }
 
   initSidebar({

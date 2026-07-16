@@ -18,3 +18,8 @@ export function getHttp() {
 export function getWindowApi() {
   return api().window;
 }
+
+/** @param {string} cmd @param {Record<string, unknown>} [args] */
+export function invoke(cmd, args) {
+  return api().core.invoke(cmd, args);
+}

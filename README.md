@@ -2,12 +2,47 @@
 
 매일 성경 묵상(일용할 양식)을 기록하는 Tauri 2 데스크톱 앱입니다.
 
+여러 PC에서 같은 기록·성경 DB를 쓰도록 **OneDrive `0VibeCoding` 폴더**에 앱과 데이터를 둡니다.
+
+## 폴더 구조 (권장)
+
+PC 사용자 이름이 달라도 OneDrive 환경변수를 쓰므로 동기화됩니다.
+
+```
+%OneDrive%\0VibeCoding\
+  daily-bread\                 ← 앱 코드 (이 Git 저장소)
+  일용할양식\
+    양식\2026\2026-07-11.md    ← 하루 = 마크다운 파일 하나
+    성경\개역개정\마태복음.json ← 직접 입력하는 개역개정 성경 DB
+```
+
+예시 (이 PC):
+
+- 앱: `C:\Users\mra90\OneDrive\0VibeCoding\daily-bread`
+- 데이터: `C:\Users\mra90\OneDrive\0VibeCoding\일용할양식`
+
+> 예전에 `문서\일용할양식`에 둔 데이터가 있으면 `0VibeCoding\일용할양식`으로 통째로 옮기면 됩니다.
+
 ## 기술 스택
 
 - **Tauri 2** + 바닐라 HTML/CSS/JS (빌드 도구 없음, `window.__TAURI__` 사용)
-- 데이터 저장: Windows 문서 폴더 (`documentDir`)
+- 데이터 저장: OneDrive `0VibeCoding\일용할양식` (절대 경로, `OneDrive` 환경변수 기준)
 
-## 로컬 실행
+## 이 PC에 처음 설치
+
+1. [Node.js LTS](https://nodejs.org), [Rust](https://rustup.rs), Visual Studio Build Tools(C++ 워크로드) 설치
+2. OneDrive에 `0VibeCoding` 폴더가 있는지 확인
+3. 앱 코드 clone:
+
+```bat
+cd %OneDrive%\0VibeCoding
+git clone https://github.com/mra9099git/yong.git daily-bread
+cd daily-bread
+git checkout cursor/daily-bread-app-a456
+```
+
+4. 도구 점검: `check-tools.bat` 더블클릭
+5. 실행: `실행.bat` 또는
 
 ```bash
 npm install
@@ -15,19 +50,6 @@ npm run tauri dev
 ```
 
 Windows에서 `npm run tauri build`로 설치 파일을 만들 수 있습니다.
-
-## 데이터 위치
-
-앱은 OS 문서 폴더 아래에 데이터를 저장합니다.
-
-- Windows: `문서\일용할양식\`
-- macOS: `~/Documents/일용할양식/`
-
-```
-일용할양식/
-  양식/2026/2026-07-11.md      ← 하루 = 마크다운 파일 하나
-  성경/개역개정/마태복음.json     ← 직접 입력하는 개역개정 성경 DB
-```
 
 ### 하루치 마크다운 형식
 
@@ -75,7 +97,7 @@ src/
   index.html        화면 뼈대
   styles.css
   main.js           이벤트 연결·화면 갱신
-  storage.js        마크다운·성경 JSON 읽기/쓰기
+  storage.js        마크다운·성경 JSON 읽기/쓰기 (OneDrive 경로)
   versePicker.js    책→장→절 범위 선택
   bibleText.js      본문 조회·입력 모드·요절 강조
   bibleUtils.js     구절 범위 유틸·경로 상수
@@ -95,12 +117,7 @@ src/
 ## UI 설정 저장
 
 칸 비율·사이드바 너비·성경 칸 접힘·창 크기·NLT 토글은 `localStorage`에 저장됩니다.
-
-## 클라우드/로컬 작업 흐름
-
-1. **scaffold** — 로컬에서 Tauri 프로젝트 생성·GitHub 푸시
-2. **layout ~ polish** — 클라우드 에이전트 브랜치 작업 → 로컬에서 병합·실행 확인
-3. **verify** — Windows에서 `npm run tauri dev` / `tauri build` 최종 점검
+(PC마다 UI 배치는 따로 저장됩니다. 묵상/성경 데이터만 OneDrive로 공유됩니다.)
 
 ## 라이선스
 
