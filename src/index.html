@@ -40,7 +40,7 @@
           <div class="header-actions">
             <button type="button" id="btn-pick-passage" class="btn">구절 선택</button>
             <button type="button" id="btn-pick-key" class="btn">요절</button>
-            <button type="button" id="btn-search-verse" class="btn" disabled title="2차 구현 예정">구절 검색</button>
+            <button type="button" id="btn-save" class="btn btn-primary">저장</button>
             <label class="nlt-toggle">
               <input type="checkbox" id="nlt-toggle" />
               <span>NLT</span>
@@ -53,7 +53,7 @@
             <div class="panel-toolbar">
               <button type="button" id="btn-toggle-bible" class="btn-icon" title="성경 칸 접기">▾</button>
               <span class="panel-label">성경 본문</span>
-              <button type="button" id="btn-input-bible" class="btn btn-small hidden">본문 입력</button>
+              <button type="button" id="btn-input-bible" class="btn btn-small hidden">본문 수정</button>
             </div>
             <div id="bible-content" class="bible-content scroll-panel"></div>
             <div id="nlt-offline-msg" class="offline-msg hidden">오프라인 — NLT를 사용할 수 없습니다</div>
@@ -65,7 +65,14 @@
             <div class="work-columns">
               <div class="work-col" id="interpretation-col">
                 <label class="col-label" for="interpretation">해석</label>
-                <textarea id="interpretation" class="scroll-panel" placeholder="해설을 붙여넣으세요..."></textarea>
+                <div
+                  id="interpretation"
+                  class="scroll-panel rich-editor"
+                  contenteditable="true"
+                  role="textbox"
+                  aria-multiline="true"
+                  data-placeholder="일용할 양식 본문을 붙여넣으면 구절·성경·해석이 자동으로 채워집니다..."
+                ></div>
               </div>
               <div class="resize-handle-v" id="work-resize" aria-hidden="true"></div>
               <div class="work-col" id="meditation-col">

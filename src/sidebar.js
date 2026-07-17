@@ -10,6 +10,8 @@ let allRecords = [];
 let filterText = '';
 let filterBook = '';
 let calendarMonth = new Date();
+/** 현재 보고 있는 날짜 (형광펜) */
+let selectedDate = '';
 
 const els = {};
 
@@ -69,6 +71,7 @@ export async function refreshSidebar(currentDate) {
     allRecords = [];
   }
   if (currentDate) {
+    selectedDate = currentDate;
     const d = parseDate(currentDate);
     calendarMonth = new Date(d.getFullYear(), d.getMonth(), 1);
   }
@@ -112,6 +115,7 @@ function renderCalendar() {
     cell.type = 'button';
     cell.className = 'cal-day';
     if (dateStr === today) cell.classList.add('today');
+    if (selectedDate && dateStr === selectedDate) cell.classList.add('selected');
     if (dates.has(dateStr)) cell.classList.add('has-record');
     cell.innerHTML = `<span>${d}</span>${dates.has(dateStr) ? '<i class="cal-dot"></i>' : ''}`;
     cell.addEventListener('click', () => {

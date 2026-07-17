@@ -1,4 +1,5 @@
 import { getBibleData, formatPassage, enumerateVerses } from './bibleUtils.js';
+import { resolveBookName } from './pasteParser.js';
 
 /** @typedef {import('./bibleUtils.js').VerseRange} VerseRange */
 
@@ -9,6 +10,7 @@ let pickerMode = 'passage';
 let keyPassageRange = null;
 let selection = { book: null, startChapter: null, startVerse: null, endChapter: null, endVerse: null };
 let clickPhase = 'start';
+let bookFilter = '';
 
 function verseOrder(chapter, verse) {
   return chapter * 10000 + verse;
@@ -27,6 +29,7 @@ function ensureModal() {
         <button type="button" class="btn-icon" id="picker-close" aria-label="닫기">✕</button>
       </header>
       <p class="picker-hint" id="picker-hint">시작 절을 클릭한 뒤, 끝 절을 클릭하세요.</p>
+      <input type="search" id="picker-search" class="input picker-search" placeholder="책 검색 또는 마태 17 / 마태복음 17:1" />
       <div class="picker-selection" id="picker-selection"></div>
       <div class="picker-columns" id="picker-columns">
         <div class="picker-col" id="picker-books"></div>
@@ -46,7 +49,85 @@ function ensureModal() {
   modalEl.querySelector('#picker-cancel').addEventListener('click', closePicker);
   modalEl.querySelector('#picker-confirm').addEventListener('click', confirmPicker);
 
+  const search = modalEl.querySelector('#picker-search');
+  search.addEventListener('input', () => {
+    bookFilter = search.value.trim();
+    applySearchQuery(bookFilter);
+  });
+  search.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applySearchQuery(search.value.trim(), true);
+    }
+  });
+
   return modalEl;
+}
+
+/**
+ * @param {string} query
+ * @param {boolean} jumpOnEnter
+ */
+function applySearchQuery(query, jumpOnEnter = false) {
+  if (pickerMode === 'key' && keyPassageRange) {
+    renderPicker();
+    return;
+  }
+
+  const q = (query || '').trim();
+  if (!q) {
+    renderBooks();
+    return;
+  }
+
+  // 마태 17:1 / 마태복음 17 / Matthew 17:1-3
+  const passMatch = q.match(/^(.+?)\s+(\d+)(?::(\d+)(?:-(\d+)(?::(\d+))?)?)?$/);
+  if (passMatch) {
+    const book = resolveBookName(passMatch[1]);
+    if (book) {
+      const ch = parseInt(passMatch[2], 10);
+      selection.book = book;
+      selection.startChapter = ch;
+      selection.startVerse = passMatch[3] ? parseInt(passMatch[3], 10) : null;
+      selection.endChapter = ch;
+      if (passMatch[5]) {
+        selection.endChapter = parseInt(passMatch[4], 10);
+        selection.endVerse = parseInt(passMatch[5], 10);
+      } else if (passMatch[4]) {
+        selection.endVerse = parseInt(passMatch[4], 10);
+      } else if (passMatch[3]) {
+        selection.endVerse = parseInt(passMatch[3], 10);
+      } else {
+        selection.endVerse = null;
+      }
+      clickPhase = selection.startVerse ? 'end' : 'start';
+      bookFilter = book.korean;
+      renderBooks();
+      renderChapters();
+      renderVerses();
+      updateSelectionDisplay();
+      if (jumpOnEnter && selection.startVerse !== null) {
+        const confirmBtn = document.getElementById('picker-confirm');
+        if (confirmBtn && !confirmBtn.disabled) confirmPicker();
+      }
+      return;
+    }
+  }
+
+  bookFilter = q;
+  const book = resolveBookName(q);
+  if (book && (jumpOnEnter || book.korean === q || book.english.toLowerCase() === q.toLowerCase())) {
+    selection.book = book;
+    selection.startChapter = null;
+    selection.startVerse = null;
+    selection.endChapter = null;
+    selection.endVerse = null;
+    clickPhase = 'start';
+  }
+  renderBooks();
+  renderChapters();
+  renderVerses();
+  updateSelectionDisplay();
 }
 
 function resetSelection(book = null) {
@@ -107,12 +188,25 @@ function updateSelectionDisplay() {
   confirmBtn.disabled = false;
 }
 
+function filteredBooks() {
+  const books = getBibleData().books;
+  if (!bookFilter || pickerMode === 'key') return books;
+  const q = bookFilter.toLowerCase();
+  return books.filter(
+    (b) =>
+      b.korean.includes(bookFilter) ||
+      b.english.toLowerCase().includes(q) ||
+      b.korean.replace(/복음$/, '').includes(bookFilter),
+  );
+}
+
 function renderBooks() {
   const container = document.getElementById('picker-books');
   container.innerHTML = '<h4>성경</h4>';
-  const books = getBibleData().books;
+  const books = filteredBooks();
   if (!books.length) {
-    container.innerHTML += '<p class="picker-empty">성경 목록을 불러오지 못했습니다.<br>앱을 다시 시작해 주세요.</p>';
+    container.innerHTML +=
+      '<p class="picker-empty">검색 결과가 없습니다.<br>책 이름을 다시 입력해 주세요.</p>';
     return;
   }
   books.forEach((book) => {
@@ -274,9 +368,14 @@ export function closePicker() {
 
 function renderPicker() {
   const columns = document.getElementById('picker-columns');
+  const search = document.getElementById('picker-search');
   const isKeyInPassage = pickerMode === 'key' && keyPassageRange;
 
   columns.classList.toggle('key-mode', !!isKeyInPassage);
+  if (search) {
+    search.classList.toggle('hidden', !!isKeyInPassage);
+    if (!isKeyInPassage) search.value = bookFilter;
+  }
 
   if (isKeyInPassage) {
     document.getElementById('picker-books').innerHTML = '';
@@ -301,9 +400,13 @@ export function openVersePicker(mode, callback, initial = null, passageForKey = 
   pickerMode = mode;
   onSelectCallback = callback;
   keyPassageRange = mode === 'key' ? passageForKey : null;
+  bookFilter = '';
 
   document.getElementById('picker-title').textContent =
     mode === 'key' ? '요절 선택' : '구절 선택';
+
+  const search = document.getElementById('picker-search');
+  if (search) search.value = '';
 
   if (mode === 'key' && passageForKey) {
     const book = getBibleData().books.find((b) => b.korean === passageForKey.book);
@@ -334,15 +437,19 @@ export function openVersePicker(mode, callback, initial = null, passageForKey = 
     document.getElementById('picker-hint').textContent =
       mode === 'key'
         ? '요절(단일 절 또는 범위)을 선택하세요.'
-        : '시작 절을 클릭한 뒤, 끝 절을 클릭하세요.';
+        : '시작 절을 클릭한 뒤, 끝 절을 클릭하세요. 위에서 책을 검색할 수 있습니다.';
   } else {
     resetSelection(null);
+    selection.book = null;
     document.getElementById('picker-hint').textContent =
       mode === 'key'
         ? '요절(단일 절 또는 범위)을 선택하세요.'
-        : '시작 절을 클릭한 뒤, 끝 절을 클릭하세요.';
+        : '시작 절을 클릭한 뒤, 끝 절을 클릭하세요. 위에서 책을 검색할 수 있습니다.';
   }
 
   renderPicker();
   modalEl.classList.remove('hidden');
+  if (search && mode !== 'key') {
+    setTimeout(() => search.focus(), 0);
+  }
 }

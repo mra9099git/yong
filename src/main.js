@@ -17,12 +17,15 @@ import {
   loadPassageText,
   renderPassageHtml,
   saveChapterInput,
+  loadChapterInputText,
   setUseNlt,
   getUseNlt,
 } from './bibleText.js';
 import { checkOnline } from './nltApi.js';
 import { openVersePicker } from './versePicker.js';
 import { initSidebar, refreshSidebar } from './sidebar.js';
+import { parseDailyBreadPaste, stripClipboardToText } from './pasteParser.js';
+import { setEditableMarkdown, getEditableMarkdown } from './richText.js';
 
 const LS_KEY = 'daily-bread-prefs';
 
@@ -112,6 +115,7 @@ function cacheElements() {
   els.biblePanel = document.getElementById('bible-panel');
   els.btnToggleBible = document.getElementById('btn-toggle-bible');
   els.btnInputBible = document.getElementById('btn-input-bible');
+  els.btnSave = document.getElementById('btn-save');
   els.interpretation = document.getElementById('interpretation');
   els.meditation = document.getElementById('meditation');
   els.saveStatus = document.getElementById('save-status');
@@ -123,15 +127,27 @@ function cacheElements() {
   els.inputModalWarning = document.getElementById('input-modal-warning');
 }
 
+function getInterpretationText() {
+  return getEditableMarkdown(els.interpretation);
+}
+
+function setInterpretationText(md) {
+  setEditableMarkdown(els.interpretation, md || '');
+}
+
 function bindEvents() {
   document.getElementById('btn-pick-passage')?.addEventListener('click', () => {
-    openVersePicker('passage', (range) => {
-      passageRange = range;
-      keyVerseRange = null;
-      markDirty();
-      updateHeader();
-      refreshBible();
-    }, passageRange);
+    openVersePicker(
+      'passage',
+      (range) => {
+        passageRange = range;
+        keyVerseRange = null;
+        markDirty();
+        updateHeader();
+        refreshBible();
+      },
+      passageRange,
+    );
   });
 
   document.getElementById('btn-pick-key')?.addEventListener('click', () => {
@@ -139,12 +155,22 @@ function bindEvents() {
       alert('먼저 구절을 선택해 주세요.');
       return;
     }
-    openVersePicker('key', (range) => {
-      keyVerseRange = range;
-      markDirty();
-      updateHeader();
-      refreshBible();
-    }, keyVerseRange, passageRange);
+    openVersePicker(
+      'key',
+      (range) => {
+        keyVerseRange = range;
+        markDirty();
+        updateHeader();
+        refreshBible();
+      },
+      keyVerseRange,
+      passageRange,
+    );
+  });
+
+  els.btnSave?.addEventListener('click', async () => {
+    clearTimeout(saveTimer);
+    await doSave({ manual: true });
   });
 
   els.btnToggleBible?.addEventListener('click', () => {
@@ -153,20 +179,14 @@ function bindEvents() {
     savePrefs();
   });
 
-  els.btnInputBible?.addEventListener('click', () => openInputModal());
+  els.btnInputBible?.addEventListener('click', () => openInputModal({ editAll: true }));
 
   els.interpretation?.addEventListener('input', markDirty);
   els.meditation?.addEventListener('input', markDirty);
 
   els.interpretation?.addEventListener('paste', (e) => {
     e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    const ta = els.interpretation;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
-    ta.selectionStart = ta.selectionEnd = start + text.length;
-    markDirty();
+    handleInterpretationPaste(e);
   });
 
   els.nltToggle?.addEventListener('change', async () => {
@@ -183,6 +203,61 @@ function bindEvents() {
   });
 
   setupInputModal();
+}
+
+async function handleInterpretationPaste(e) {
+  const text = stripClipboardToText(e.clipboardData);
+  const parsed = parseDailyBreadPaste(text);
+
+  if (parsed.recognized && parsed.passage) {
+    passageRange = parsed.passage;
+    keyVerseRange = parsed.keyVerse || null;
+    setInterpretationText(parsed.interpretationMd || '');
+
+    if (parsed.chapterInputs) {
+      for (const [ch, inputText] of Object.entries(parsed.chapterInputs)) {
+        try {
+          await saveChapterInput(passageRange, parseInt(ch, 10), inputText);
+        } catch (err) {
+          console.error('성경 저장 실패:', err);
+        }
+      }
+    }
+
+    updateHeader();
+    await refreshBible();
+    markDirty();
+    els.saveStatus.textContent = '붙여넣기 인식됨 — 저장 중...';
+    return;
+  }
+
+  // 일반 텍스트: 커서 위치에 삽입
+  const md = getInterpretationText();
+  const plain = text;
+  // contenteditable selection insert as text then refresh from md roughly append if empty selection hard
+  insertPlainIntoEditable(els.interpretation, plain);
+  markDirty();
+}
+
+function insertPlainIntoEditable(el, text) {
+  el.focus();
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) {
+    el.textContent = (el.textContent || '') + text;
+    return;
+  }
+  const range = sel.getRangeAt(0);
+  if (!el.contains(range.commonAncestorContainer)) {
+    el.textContent = (el.textContent || '') + text;
+    return;
+  }
+  range.deleteContents();
+  const node = document.createTextNode(text);
+  range.insertNode(node);
+  range.setStartAfter(node);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
 
 function setupInputModal() {
@@ -206,7 +281,7 @@ function setupInputModal() {
     inputChapterQueue = inputChapterQueue.filter((ch) => ch !== currentInputChapter);
     if (inputChapterQueue.length) {
       currentInputChapter = inputChapterQueue[0];
-      showInputChapter(currentInputChapter);
+      await showInputChapter(currentInputChapter);
     } else {
       close();
       await refreshBible();
@@ -222,12 +297,12 @@ async function openDate(dateStr) {
   if (record) {
     passageRange = parsePassageString(record.passage);
     keyVerseRange = parsePassageString(record.key_verse);
-    els.interpretation.value = record.interpretation || '';
+    setInterpretationText(record.interpretation || '');
     els.meditation.value = record.meditation || '';
   } else {
     passageRange = null;
     keyVerseRange = null;
-    els.interpretation.value = '';
+    setInterpretationText('');
     els.meditation.value = '';
   }
 
@@ -257,6 +332,7 @@ async function refreshBible() {
     if (!online) {
       els.nltOffline?.classList.remove('hidden');
       els.bibleContent.innerHTML = '<p class="bible-empty">오프라인 — NLT를 사용할 수 없습니다</p>';
+      els.btnInputBible?.classList.add('hidden');
       return;
     }
     els.nltOffline?.classList.add('hidden');
@@ -272,21 +348,26 @@ async function refreshBible() {
 
   els.bibleContent.innerHTML = renderPassageHtml(result.verses, result.missingChapters);
 
-  if (!getUseNlt() && result.missingChapters?.length) {
+  if (!getUseNlt()) {
     els.btnInputBible?.classList.remove('hidden');
-    inputChapterQueue = [...result.missingChapters];
+    const hasMissing = result.missingChapters?.length > 0;
+    els.btnInputBible.textContent = hasMissing ? '본문 입력' : '본문 수정';
+    inputChapterQueue = hasMissing
+      ? [...result.missingChapters]
+      : getChaptersNeedingInput();
   } else {
     els.btnInputBible?.classList.add('hidden');
   }
 }
 
-function openInputModal() {
-  if (!inputChapterQueue.length && passageRange) {
+async function openInputModal({ editAll = false } = {}) {
+  if (!passageRange) return;
+  if (editAll || !inputChapterQueue.length) {
     inputChapterQueue = getChaptersNeedingInput();
   }
   if (!inputChapterQueue.length) return;
   currentInputChapter = inputChapterQueue[0];
-  showInputChapter(currentInputChapter);
+  await showInputChapter(currentInputChapter);
   els.inputModal?.classList.remove('hidden');
 }
 
@@ -299,15 +380,19 @@ function getChaptersNeedingInput() {
   return chapters;
 }
 
-function showInputChapter(chapter) {
+async function showInputChapter(chapter) {
   els.inputModalTitle.textContent = `${passageRange.book} ${chapter}장 입력`;
-  els.inputModalText.value = '';
   els.inputModalWarning.classList.add('hidden');
+  try {
+    els.inputModalText.value = await loadChapterInputText(passageRange, chapter);
+  } catch {
+    els.inputModalText.value = '';
+  }
   const remaining = inputChapterQueue.length;
   document.getElementById('input-modal-hint').textContent =
     remaining > 1
-      ? `${chapter}장 입력 (${remaining}장 남음). 절 번호로 시작: 1 본문...`
-      : '절 번호로 시작하는 줄 형식으로 입력하세요. 예: 1 태초에...';
+      ? `${chapter}장 입력/수정 (${remaining}장 남음). 절 번호로 시작: 1 본문...`
+      : '절 번호로 시작하는 줄 형식으로 입력·수정하세요. 예: 1 태초에...';
 }
 
 function markDirty() {
@@ -317,13 +402,14 @@ function markDirty() {
   els.saveStatus.textContent = '저장 중...';
 }
 
-async function doSave() {
+async function doSave({ manual = false } = {}) {
+  clearTimeout(saveTimer);
   const record = {
     date: currentDate,
     passage: passageRange ? formatPassage(passageRange) : '',
     key_verse: keyVerseRange ? formatPassage(keyVerseRange) : '',
     book: passageRange?.book || '',
-    interpretation: els.interpretation.value,
+    interpretation: getInterpretationText(),
     meditation: els.meditation.value,
   };
 
@@ -332,13 +418,14 @@ async function doSave() {
       await saveRecord(record);
       const now = new Date();
       const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      els.saveStatus.textContent = `자동 저장됨 ${time}`;
+      els.saveStatus.textContent = manual ? `저장됨 ${time}` : `자동 저장됨 ${time}`;
     } else {
       await deleteRecord(currentDate);
-      els.saveStatus.textContent = '';
+      els.saveStatus.textContent = manual ? '내용 없음 — 저장할 항목이 없습니다' : '';
     }
   } catch (err) {
     console.error('저장 실패:', err);
+    els.saveStatus.textContent = `저장 실패: ${err?.message || err}`;
     showInitError(`저장 실패: ${err?.message || err}`);
   }
 
@@ -414,7 +501,14 @@ function setupResizeHandles() {
   setupDrag('work-resize', 'h', (dx) => {
     const cols = document.querySelector('.work-columns');
     if (!cols) return;
-    const ratio = Math.max(0.2, Math.min(0.8, (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--interp-width')) / 100 || 0.5) + dx / cols.offsetWidth));
+    const ratio = Math.max(
+      0.2,
+      Math.min(
+        0.8,
+        (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--interp-width')) / 100 || 0.5) +
+          dx / cols.offsetWidth,
+      ),
+    );
     document.documentElement.style.setProperty('--interp-width', `${(ratio * 100).toFixed(1)}%`);
   });
 
@@ -428,7 +522,8 @@ function setupResizeHandles() {
 function setupDrag(handleId, axis, onDrag) {
   const handle = document.getElementById(handleId);
   if (!handle) return;
-  let startX, startY;
+  let startX;
+  let startY;
 
   handle.addEventListener('mousedown', (e) => {
     e.preventDefault();

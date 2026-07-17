@@ -136,6 +136,33 @@ export async function saveChapterInput(range, chapter, inputText) {
   return { bookData, savedVerses: Object.keys(verses).map(Number), missing };
 }
 
+/** 모달 프리필용: 저장된 장을 `N 본문` 줄로 */
+export function formatChapterForInput(bookData, chapter, range) {
+  const ch = bookData?.[String(chapter)] || {};
+  const startV = range && chapter === range.startChapter ? range.startVerse : 1;
+  const keys = Object.keys(ch)
+    .map(Number)
+    .filter((n) => !Number.isNaN(n))
+    .sort((a, b) => a - b);
+  const endV =
+    range && chapter === range.endChapter
+      ? range.endVerse
+      : keys.length
+        ? Math.max(...keys)
+        : startV;
+  const lines = [];
+  for (let v = startV; v <= endV; v++) {
+    const text = ch[String(v)];
+    if (text) lines.push(`${v} ${text}`);
+  }
+  return lines.join('\n');
+}
+
+export async function loadChapterInputText(range, chapter) {
+  const bookData = await loadBibleBook(range.book);
+  return formatChapterForInput(bookData, chapter, range);
+}
+
 /** @param {import('./bibleUtils.js').VerseRange} range */
 export function renderPassageHtml(verses, missingChapters) {
   if (!verses.length) {
