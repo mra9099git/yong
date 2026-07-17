@@ -10,9 +10,12 @@ function escapeHtml(str) {
 export function markdownToHtml(md) {
   if (!md) return '';
   const escaped = escapeHtml(md);
-  return escaped
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>');
+  const withBold = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // 문단 구분(빈 줄)을 보이게
+  return withBold
+    .split(/\n{2,}/)
+    .map((para) => `<div class="md-para">${para.replace(/\n/g, '<br>')}</div>`)
+    .join('');
 }
 
 /** contenteditable → 마크다운 */

@@ -453,6 +453,14 @@ textarea {
   font-weight: 700;
 }
 
+.rich-editor .md-para {
+  margin: 0 0 0.85em;
+}
+
+.rich-editor .md-para:last-child {
+  margin-bottom: 0;
+}
+
 #interpretation-col textarea,
 #interpretation-col .rich-editor {
   border-right: 1px solid var(--border);
