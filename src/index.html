@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>일용할 양식</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <aside id="sidebar" class="sidebar">
+        <button type="button" id="btn-go-today" class="btn btn-primary btn-block">오늘로 가기</button>
+
+        <div class="sidebar-section calendar-section">
+          <div class="cal-nav">
+            <button type="button" id="cal-prev" class="btn-icon" aria-label="이전 달">‹</button>
+            <span id="cal-title" class="cal-title"></span>
+            <button type="button" id="cal-next" class="btn-icon" aria-label="다음 달">›</button>
+          </div>
+          <div id="sidebar-calendar" class="calendar-grid"></div>
+        </div>
+
+        <div class="sidebar-section">
+          <input type="search" id="sidebar-filter" class="input" placeholder="구절·본문 검색..." />
+          <select id="sidebar-book-filter" class="select"></select>
+        </div>
+
+        <ul id="sidebar-records" class="record-list"></ul>
+      </aside>
+
+      <div class="resize-handle-v" id="sidebar-resize" aria-hidden="true"></div>
+
+      <main id="main" class="main">
+        <header class="main-header">
+          <div class="header-info">
+            <span id="header-date" class="header-date"></span>
+            <span id="header-passage" class="header-passage"></span>
+            <span id="header-key-verse" class="header-key-verse"></span>
+          </div>
+          <div class="header-actions">
+            <button type="button" id="btn-pick-passage" class="btn">구절 선택</button>
+            <button type="button" id="btn-pick-key" class="btn">요절</button>
+            <button type="button" id="btn-save" class="btn btn-primary">저장</button>
+            <label class="nlt-toggle">
+              <input type="checkbox" id="nlt-toggle" />
+              <span>NLT</span>
+            </label>
+          </div>
+        </header>
+
+        <div id="content-area" class="content-area">
+          <section id="bible-panel" class="bible-panel">
+            <div class="panel-toolbar">
+              <button type="button" id="btn-toggle-bible" class="btn-icon" title="성경 칸 접기">▾</button>
+              <span class="panel-label">성경 본문</span>
+              <button type="button" id="btn-input-bible" class="btn btn-small hidden">본문 수정</button>
+            </div>
+            <div id="bible-content" class="bible-content scroll-panel"></div>
+            <div id="nlt-offline-msg" class="offline-msg hidden">오프라인 — NLT를 사용할 수 없습니다</div>
+          </section>
+
+          <div class="resize-handle-h" id="bible-resize" aria-hidden="true"></div>
+
+          <section id="work-panel" class="work-panel">
+            <div class="work-columns">
+              <div class="work-col" id="interpretation-col">
+                <label class="col-label" for="interpretation">해석</label>
+                <div
+                  id="interpretation"
+                  class="scroll-panel rich-editor"
+                  contenteditable="true"
+                  role="textbox"
+                  aria-multiline="true"
+                  data-placeholder="일용할 양식 본문을 붙여넣으면 구절·성경·해석이 자동으로 채워집니다..."
+                ></div>
+              </div>
+              <div class="resize-handle-v" id="work-resize" aria-hidden="true"></div>
+              <div class="work-col" id="meditation-col">
+                <label class="col-label" for="meditation">나의 묵상</label>
+                <textarea id="meditation" class="scroll-panel" placeholder="오늘의 묵상을 기록하세요..."></textarea>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <footer class="status-bar">
+          <span id="save-status" class="save-status"></span>
+        </footer>
+      </main>
+    </div>
+
+    <div id="input-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content input-modal">
+        <header class="modal-header">
+          <h2 id="input-modal-title">본문 입력</h2>
+          <button type="button" class="btn-icon" id="input-modal-close">✕</button>
+        </header>
+        <p id="input-modal-hint" class="input-hint">
+          절 번호로 시작하는 줄 형식으로 입력하세요. 예: <code>1 태초에...</code>
+        </p>
+        <p id="input-modal-warning" class="input-warning hidden"></p>
+        <textarea id="input-modal-text" class="input-textarea" rows="16"></textarea>
+        <footer class="modal-footer">
+          <button type="button" class="btn" id="input-modal-cancel">취소</button>
+          <button type="button" class="btn btn-primary" id="input-modal-save">저장</button>
+        </footer>
+      </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
