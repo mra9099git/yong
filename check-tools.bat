@@ -68,13 +68,13 @@ if defined OneDrive (
   set "OD=%USERPROFILE%\OneDrive"
 )
 
-set "APP=%OD%\0VibeCoding\daily-bread"
-set "DATA=%APP%\일용할양식"
+set "APP=%~dp0"
+set "DATA=%OD%\0VibeCoding\DailyBread\데이터"
 
 if exist "%APP%\" (
-  echo [OK] 통합 폴더(앱+데이터): %APP%
+  echo [OK] 로컬 앱 소스: %APP%
 ) else (
-  echo [!] 없음: %APP%  — 여기에 저장소를 clone 하세요
+  echo [X] 로컬 앱 소스를 찾을 수 없습니다: %APP%
 )
 
 if exist "%DATA%\" (
@@ -88,8 +88,7 @@ if "!FAIL!"=="1" (
   echo 결과: 설치가 필요한 항목이 있습니다.
 ) else (
   echo 결과: 기본 도구는 준비된 것 같습니다.
-  echo 다음: %APP% 에서 npm install ^& npm run tauri dev
-  echo       또는 실행.bat
+  echo 다음: 개발실행.bat
 )
 
 echo.

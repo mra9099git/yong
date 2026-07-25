@@ -6,17 +6,12 @@ const { exists, readTextFile, writeTextFile, readDir, remove, mkdir, rename } = 
 /** @type {Promise<string>|null} */
 let dataRootPromise = null;
 
-/** OneDrive\0VibeCoding\daily-bread\일용할양식 절대 경로 */
+/** OneDrive\0VibeCoding\DailyBread\데이터 절대 경로 */
 export function getDataRoot() {
   if (!dataRootPromise) {
     dataRootPromise = invoke('get_data_root');
   }
   return dataRootPromise;
-}
-
-/** OneDrive\0VibeCoding\daily-bread 절대 경로 (앱+데이터 통합 폴더) */
-export function getAppRoot() {
-  return invoke('get_app_root');
 }
 
 function joinPath(root, rel) {

@@ -1,30 +1,35 @@
 use std::path::PathBuf;
+use tauri_plugin_fs::FsExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
-        .invoke_handler(tauri::generate_handler![get_data_root, get_app_root])
+        .setup(|app| {
+            let data_root = data_root_path()
+                .map_err(|message| std::io::Error::new(std::io::ErrorKind::NotFound, message))?;
+
+            std::fs::create_dir_all(&data_root)?;
+            app.fs_scope().allow_directory(&data_root, true)?;
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![get_data_root])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-/// OneDrive\0VibeCoding\daily-bread\일용할양식 — 묵상 기록·성경 DB
+/// OneDrive\0VibeCoding\DailyBread\데이터 — 여러 PC에서 공유하는 묵상 기록·성경 DB
 #[tauri::command]
 fn get_data_root() -> Result<String, String> {
-    let root = app_root_path()?.join("일용할양식");
-    Ok(root.to_string_lossy().into_owned())
+    Ok(data_root_path()?.to_string_lossy().into_owned())
 }
 
-/// OneDrive\0VibeCoding\daily-bread — 앱 + 데이터 통합 폴더
-#[tauri::command]
-fn get_app_root() -> Result<String, String> {
-    Ok(app_root_path()?.to_string_lossy().into_owned())
-}
-
-fn app_root_path() -> Result<PathBuf, String> {
-    Ok(resolve_onedrive()?.join("0VibeCoding").join("daily-bread"))
+fn data_root_path() -> Result<PathBuf, String> {
+    Ok(resolve_onedrive()?
+        .join("0VibeCoding")
+        .join("DailyBread")
+        .join("데이터"))
 }
 
 fn resolve_onedrive() -> Result<PathBuf, String> {

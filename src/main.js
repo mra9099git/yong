@@ -54,7 +54,7 @@ function showInitError(message) {
 
 async function init() {
   if (!window.__TAURI__) {
-    showInitError('Tauri 환경이 아닙니다. 실행.bat 또는 npm run tauri dev 로 실행해 주세요.');
+    showInitError('Tauri 환경이 아닙니다. 설치된 앱 또는 개발실행.bat로 실행해 주세요.');
     return;
   }
 
@@ -76,7 +76,7 @@ async function init() {
   } catch (err) {
     console.error(err);
     showInitError(
-      `데이터 폴더 생성 실패: ${err?.message || err}. OneDrive\\0VibeCoding\\daily-bread\\일용할양식 경로를 확인해 주세요.`,
+      `데이터 폴더 생성 실패: ${err?.message || err}. OneDrive\\0VibeCoding\\DailyBread\\데이터 경로와 OneDrive 로그인을 확인해 주세요.`,
     );
   }
 

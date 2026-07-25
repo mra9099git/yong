@@ -1,6 +1,6 @@
 [package]
 name = "daily-bread"
-version = "0.1.0"
+version = "0.1.1"
 description = "일용할 양식 - 매일 성경 묵상 기록"
 authors = ["you"]
 edition = "2021"

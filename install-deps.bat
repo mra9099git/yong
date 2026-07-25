@@ -141,7 +141,7 @@ if "!DID_INSTALL!"=="1" (
   echo   완전히 닫았다가 다시 연 다음 진행하세요.
   echo.
 )
-echo   다음: check-tools.bat  →  실행.bat
+echo   다음: check-tools.bat  →  개발실행.bat
 echo.
 pause
 endlocal

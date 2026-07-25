@@ -1,105 +1,41 @@
-# 새 PC에서 일용할 양식 쓰기 (체크리스트)
+# 새 PC에서 일용할 양식 사용하기
 
-다음 주 본가 PC처럼 **다른 컴퓨터**에서 다시 세팅할 때 이 파일만 보면 됩니다.
+일반 사용자는 Git, Node.js, Rust를 설치할 필요가 없습니다.
 
-## OneDrive만으로 되는 것 / 안 되는 것
+## 설치
 
-| OneDrive로 따라옴 | PC마다 다시 설치 |
-|------------------|------------------|
-| `0VibeCoding\daily-bread` 앱 코드 | Git |
-| `daily-bread\일용할양식` 묵상·성경 데이터 | Node.js |
-| 이 안내 파일·`*.bat` 스크립트 | Rust (cargo) |
-| | Visual Studio C++ Build Tools |
+1. 같은 Microsoft 계정으로 OneDrive에 로그인합니다.
+2. OneDrive의 `0VibeCoding\DailyBread` 폴더가 내려올 때까지 기다립니다.
+3. `0VibeCoding\DailyBread\일용할양식 시작.cmd`를 더블클릭합니다.
+4. 이 PC에 앱이 없으면 설치 화면이 열립니다.
+5. 설치가 끝나면 바탕화면 또는 시작 메뉴의 `일용할 양식`을 실행합니다.
 
-→ **데이터·코드는 OneDrive**, **도구는 PC마다 `install-deps.bat`**.
+개인용 설치파일이라 Windows가 보호 경고를 표시할 수 있습니다. 파일 이름이 `일용할 양식_..._x64-setup.exe`인지 확인한 뒤 `추가 정보` → `실행`을 선택합니다.
 
-## 본가 PC 도착 후 (권장 순서)
+## 파일 위치
 
-### 0) OneDrive 로그인
-
-같은 Microsoft 계정으로 OneDrive가 `0VibeCoding\daily-bread` 를 받을 때까지 기다립니다.
-
-### 1) Git이 없으면 먼저 설치 (중요)
-
-winget 조용한 설치는 **프로그레스 끝(MB 꽉 찬 뒤)에서 자주 멈춥니다.**  
-그럴 땐 winget을 포기하고 브라우저로 설치하세요.
-
-1. https://git-scm.com/download/win  
-2. **64-bit Git for Windows Setup** 실행  
-3. **Next만 눌러** 기본값으로 설치  
-4. PowerShell / Cursor **전부 닫았다가** 다시 열기  
-5. 확인:
-
-```powershell
-git --version
+```text
+OneDrive\0VibeCoding\DailyBread\
+  데이터\
+    양식\
+    성경\
+  설치파일\
+    일용할 양식_x.x.x_x64-setup.exe
+  일용할양식 시작.cmd
+  DailyBreadLauncher.ps1
+  다른PC에서 설치하기.md
 ```
 
-### 2) 최신 코드 받기
+- 묵상과 성경 데이터만 OneDrive로 동기화됩니다.
+- 앱 본체는 각 컴퓨터의 `%LOCALAPPDATA%` 아래에 설치됩니다.
+- 바탕화면 바로가기는 해당 컴퓨터에만 존재합니다.
+- OneDrive 안에는 `.git`, `node_modules`, `src-tauri\target` 같은 개발 폴더를 두지 않습니다.
 
-탐색기에서 `daily-bread` 폴더를 연 뒤 **`업데이트.bat` 더블클릭**  
-→ 브랜치 맞추고 `git pull`까지 해 줍니다. (경로 직접 칠 필요 없음)
+## 실행되지 않을 때
 
-PowerShell로 할 때만:
+1. OneDrive 로그인이 되어 있는지 확인합니다.
+2. `0VibeCoding\DailyBread\설치파일` 안에 설치파일이 있는지 확인합니다.
+3. 설치파일을 직접 실행한 뒤 바탕화면 바로가기를 사용합니다.
+4. 그래도 안 되면 표시된 오류 문장을 복사해 AI에게 전달합니다.
 
-```powershell
-cd $env:OneDrive\0VibeCoding\daily-bread
-.\업데이트.bat
-```
-
-#### 자주 막히는 경우
-
-**`업데이트.bat` / `install-deps.bat` 이 없다**  
-→ 아직 예전 브랜치이거나 pull 전입니다. Git 설치 후 아래 clone을 다시 하거나, Cursor/GitHub에서 최신 브랜치를 받으세요.
-
-**폴더 자체가 없다 (첫 clone)**  
-
-```powershell
-cd $env:OneDrive\0VibeCoding
-git clone https://github.com/mra9099git/yong.git daily-bread
-cd daily-bread
-git checkout cursor/daily-bread-app-a456
-```
-
-### 3) 도구 설치 (없는 것만)
-
-```powershell
-.\install-deps.bat
-```
-
-- 이미 있는 Git / Node 는 `[건너뜀]`
-- 없는 Rust / C++ Build Tools 만 설치
-- C++ Build Tools 는 **십여 분** 걸릴 수 있음 → 끝날 때까지 기다림
-
-끝나면 **Cursor·PowerShell 전부 닫았다가** 다시 엽니다. (PATH 반영)
-
-### 4) 점검 후 실행
-
-```powershell
-cd $env:OneDrive\0VibeCoding\daily-bread
-.\check-tools.bat
-.\실행.bat
-```
-
-## 오늘(2026-07-16) 이 PC에서 겪은 것 → 다음에 피하기
-
-1. **`git` 인식 안 됨** → Git 미설치. winget silent 말고 **git-scm.com** 또는 winget `--interactive`  
-2. **winget이 `█ 3.16 MB / 3.16 MB` 에서 멈춤** → 정상 진행이 아님. `Ctrl+C` 후 브라우저 설치  
-3. **`git pull` 해도 `install-deps.bat` 없음** → `main`/예전 브랜치에 있음. **`cursor/daily-bread-app-a456` 로 checkout**  
-4. **checkout 막힘 (`package-lock.json`)** → `git checkout -- package-lock.json` 후 다시 checkout  
-5. **설치 직후 `cargo`/`git` 인식 안 됨** → 터미널·Cursor를 새로 열지 않아서. **창 전부 종료 후 재실행**  
-6. **데이터 위치** → `%OneDrive%\0VibeCoding\daily-bread\일용할양식` (앱과 같은 폴더)
-
-## 현재 작업 상태 (메모)
-
-- 작업 브랜치: `cursor/daily-bread-app-a456`
-- 앱/데이터 루트: `%OneDrive%\0VibeCoding\daily-bread` (사용자 이름은 PC마다 다름)
-- 묵상 데이터(`일용할양식\`)는 Git에 올리지 않음
-
-나중에 `main`에 병합되면 checkout 브랜치 이름만 `main`으로 바꾸면 됩니다.
-
-> 이 저장소가 **Public**이면 폴더 구조 안내도 공개됩니다.  
-> 개인용만 쓰려면 GitHub에서 저장소를 **Private**으로 바꾸세요.
-
-## 막히면
-
-`check-tools.bat` 전체 출력, 또는 빨간 에러 문장을 그대로 복사해 두면 이어서 해결하기 쉽습니다.
+개발·수정 방법은 로컬 앱 소스의 `유지보수_AI용.md`를 참고합니다.

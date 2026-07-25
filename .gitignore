@@ -12,8 +12,12 @@ dist
 dist-ssr
 *.local
 
-# 묵상·성경 데이터 (OneDrive로만 동기화, Git에는 올리지 않음)
+# 묵상·성경 데이터는 소스 폴더 밖의 OneDrive\0VibeCoding\DailyBread\데이터에 둠
 일용할양식/
+DailyBread/
+
+# 정식 설치파일은 OneDrive 배포 폴더에만 복사
+배포파일/설치파일/
 
 # Editor directories and files
 .vscode/*

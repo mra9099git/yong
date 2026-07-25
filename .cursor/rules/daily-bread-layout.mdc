@@ -1,0 +1,38 @@
+---
+description: 일용할 양식의 로컬 개발 소스와 OneDrive 데이터 분리 구조를 항상 지킨다
+alwaysApply: true
+---
+
+# 작업 시작 전 확인
+
+- 현재 연 프로젝트에 `.git`, `package.json`, `src`, `src-tauri`가 모두 있는지 확인한다.
+- 현재 프로젝트 경로가 OneDrive 안이면 개발 작업을 즉시 중단한다.
+- OneDrive 안에서는 `npm install`, `npm run tauri dev`, `npm run build`, `cargo build`, Git 저장소 생성 또는 소스 복사를 하지 않는다.
+- OneDrive 폴더를 열었다면 사용자에게 OneDrive 밖의 로컬 Git 저장소를 Cursor에서 다시 열도록 안내한다.
+
+# 고정된 폴더 역할
+
+- 개발 소스: 각 PC의 OneDrive 밖 로컬 Git 저장소
+  - 예: `%USERPROFILE%\Desktop\daily-bread`
+- 동기화 대상: `%OneDrive%\0VibeCoding\DailyBread`
+  - 사용자 데이터: `데이터`
+  - 설치 프로그램: `설치파일`
+  - 비상용 소스 사본: `유지보수용`
+- 설치된 앱: `%LOCALAPPDATA%\일용할 양식\daily-bread.exe`
+
+# 변경 금지 원칙
+
+- `.git`, `.cursor`, `node_modules`, `src-tauri\target`, 개발용 소스 전체를 OneDrive로 복사하거나 이동하지 않는다.
+- 사용자가 명시적으로 요청하지 않는 한 `src-tauri/src/lib.rs`의 데이터 루트
+  `%OneDrive%\0VibeCoding\DailyBread\데이터`를 다른 위치로 바꾸지 않는다.
+- 사용자가 명시적으로 요청하고 백업을 확인하지 않는 한 `데이터` 안의 묵상 및 성경 파일을 수정하거나 삭제하지 않는다.
+- 일반 실행에는 설치된 앱 또는 OneDrive의 `일용할양식 시작.cmd`를 사용한다.
+- 개발 실행과 빌드는 로컬 저장소에서만 한다.
+- 빌드 후 OneDrive에는 최종 `*-setup.exe`만 복사하고 `src-tauri\target`은 복사하지 않는다.
+
+# 다른 PC에서 개발할 때
+
+1. GitHub 저장소를 OneDrive 밖의 로컬 폴더에 clone한다.
+2. 그 로컬 폴더를 Cursor에서 연다.
+3. 의존성과 빌드 결과는 그 로컬 폴더에서만 생성한다.
+4. OneDrive의 `0VibeCoding\DailyBread`는 앱 데이터와 배포 파일용으로만 사용한다.

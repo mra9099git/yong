@@ -13,7 +13,7 @@ export function getBibleData() {
   return bibleData;
 }
 
-/** 데이터 루트(daily-bread\일용할양식) 기준 상대 경로 */
+/** 데이터 루트(OneDrive\0VibeCoding\DailyBread\데이터) 기준 상대 경로 */
 export const RECORDS_DIR = '양식';
 export const BIBLE_DIR = '성경/개역개정';
 
